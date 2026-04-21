@@ -31,22 +31,26 @@ class OllamaEmbeddings(EmbeddingsProvider):
         embedding = await provider.generate_embedding("Hello world")
     """
 
-    def __init__(self, base_url: str = 'http://localhost:11434', model: str = 'nomic-embed-text'):
+    def __init__(
+        self,
+        base_url: str = 'http://localhost:11434',
+        model: str = 'nomic-embed-text',
+        dimensions: int = 768,
+    ):
         """Initialize Ollama embeddings provider."""
         self.base_url = base_url
         self.model = model
-        self._dimensions = 768  # nomic-embed-text default
+        self._dimensions = dimensions
+        self._client = httpx.AsyncClient(timeout=30.0)
 
     async def generate_embedding(self, text: str) -> List[float]:
         """Generate embedding using Ollama."""
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f'{self.base_url}/api/embeddings',
-                json={'model': self.model, 'prompt': text},
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            return response.json()['embedding']
+        response = await self._client.post(
+            f'{self.base_url}/api/embeddings',
+            json={'model': self.model, 'prompt': text},
+        )
+        response.raise_for_status()
+        return response.json()['embedding']
 
     def get_dimensions(self) -> int:
         """Get embedding dimensions."""
@@ -173,7 +177,7 @@ class BedrockEmbeddings(EmbeddingsProvider):
                 response = self.client.invoke_model(modelId=self.model_id, body=json.dumps(body))
                 return json.loads(response['body'].read())['embedding']
 
-        return await asyncio.get_event_loop().run_in_executor(None, _invoke)
+        return await asyncio.get_running_loop().run_in_executor(None, _invoke)
 
     def get_dimensions(self) -> int:
         """Get embedding dimensions."""
@@ -185,10 +189,10 @@ class BedrockEmbeddings(EmbeddingsProvider):
 
 
 class HashEmbeddings(EmbeddingsProvider):
-    """Dummy embeddings provider for testing using basic hash algorithm.
+    """Hash-based embeddings provider for testing.
 
     Example:
-        provider = DummyEmbeddings(dimensions=128)
+        provider = HashEmbeddings(dimensions=128)
         embedding = await provider.generate_embedding("Hello world")
     """
 

@@ -15,6 +15,9 @@
 """awslabs valkey MCP Server implementation."""
 
 import argparse
+import asyncio
+import atexit
+from awslabs.valkey_mcp_server.common.connection import close_client
 from awslabs.valkey_mcp_server.common.server import mcp
 from awslabs.valkey_mcp_server.context import Context
 from awslabs.valkey_mcp_server.tools import (  # noqa: F401
@@ -59,6 +62,8 @@ def main():
 
     args = parser.parse_args()
     Context.initialize(args.readonly)
+
+    atexit.register(lambda: asyncio.run(close_client()))
 
     logger.info('Amazon ElastiCache/MemoryDB Valkey MCP Server Started...')
 

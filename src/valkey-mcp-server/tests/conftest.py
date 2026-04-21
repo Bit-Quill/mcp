@@ -33,23 +33,29 @@ def valkey_container():
 
 @pytest.fixture()
 def valkey_connection(valkey_container):
-    """Patch ValkeyConnectionManager to use the testcontainer.
+    """Patch get_client to return a GLIDE client connected to the testcontainer.
 
-    Returns the live Valkey connection for direct use in tests.
+    Returns the mock client for direct use in tests.
     """
-    from valkey import Valkey
+    from glide import GlideClient, GlideClientConfiguration, NodeAddress
 
     host = valkey_container.get_container_host_ip()
     port = int(valkey_container.get_exposed_port(6379))
 
-    def make_connection(decode_responses=True):
-        return Valkey(host=host, port=port, decode_responses=decode_responses)
+    _client = None
+
+    async def _get_client():
+        nonlocal _client
+        if _client is None:
+            config = GlideClientConfiguration(
+                addresses=[NodeAddress(host, port)],
+                request_timeout=5000,
+            )
+            _client = await GlideClient.create(config)
+        return _client
 
     with patch(
-        'awslabs.valkey_mcp_server.common.connection.ValkeyConnectionManager.get_connection',
-        side_effect=make_connection,
+        'awslabs.valkey_mcp_server.common.connection.get_client',
+        side_effect=_get_client,
     ):
-        conn = make_connection(decode_responses=True)
-        yield conn
-        # Flush between tests
-        conn.flushall()
+        yield _get_client

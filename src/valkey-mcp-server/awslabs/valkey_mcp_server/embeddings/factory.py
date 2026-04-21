@@ -83,5 +83,5 @@ def create_embeddings_provider() -> EmbeddingsProvider:
     else:
         raise ValueError(
             f'Unknown embeddings provider: {provider_type}. '
-            f'Supported providers: ollama, bedrock, openai'
+            f'Supported providers: ollama, bedrock, openai, hash'
         )

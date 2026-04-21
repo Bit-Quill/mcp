@@ -190,8 +190,8 @@ async def aggregate(
     try:
         client = await get_client()
 
-        # Build the pipeline args for custom_command since ft.aggregate
-        # may not support all pipeline stages via its options API
+        # Build the pipeline args for custom_command.
+        # TODO: Migrate to ft.aggregate() when GLIDE adds full pipeline stage support.
         cmd: list = ['FT.AGGREGATE', index_name, query]
 
         if pipeline:

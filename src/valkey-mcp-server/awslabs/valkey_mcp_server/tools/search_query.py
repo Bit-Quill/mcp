@@ -22,6 +22,7 @@ from awslabs.valkey_mcp_server.common.utils import pack_embedding
 from awslabs.valkey_mcp_server.embeddings import create_embeddings_provider
 from glide import ft
 from glide_shared.commands.server_modules.ft_options.ft_search_options import (
+    FtSearchLimit,
     FtSearchOptions,
 )
 from glide_shared.exceptions import RequestError
@@ -84,16 +85,17 @@ async def search(
     return_fields: Optional[List[str]] = None,
     offset: int = 0,
     limit: int = 10,
+    mode: Optional[str] = None,
     hybrid_weight: float = 0.5,
 ) -> Dict[str, Any]:
     """Search a Valkey Search index with auto-detected mode.
 
-    Modes (auto-detected from parameters):
+    Modes (auto-detected from parameters, or set explicitly via mode):
 
     - Semantic: query_text + embedding provider configured
     - Text: query_text + no embedding provider
     - Find-similar: document_id provided
-    - Hybrid: query_text + hybrid_weight != 0.5
+    - Hybrid: mode="hybrid" or hybrid_weight explicitly set
 
     Args:
         index_name: Valkey Search index name
@@ -104,6 +106,7 @@ async def search(
         return_fields: Fields to return. None = all.
         offset: Pagination offset (default: 0)
         limit: Max results (default: 10)
+        mode: Explicit mode override — "semantic", "text", "hybrid", "find_similar"
         hybrid_weight: Text vs vector balance, 0=text 1=vector (default: 0.5)
 
     Returns:
@@ -128,7 +131,7 @@ async def search(
             )
 
         has = _has_provider()
-        if has and hybrid_weight != 0.5:
+        if mode == 'hybrid' or (has and hybrid_weight != 0.5):
             return await _hybrid(
                 client,
                 index_name,
@@ -178,7 +181,7 @@ async def _semantic(client, index_name, query_text, vector_field, filt, ret, off
         client=client,
         index_name=index_name,
         query=query,
-        options=FtSearchOptions(params={'vector': blob}),
+        options=FtSearchOptions(params={'vector': blob}, limit=FtSearchLimit(offset, limit)),
     )
     docs = _decode_docs(results, ret, skip_field=vector_field)
     return {'status': 'success', 'mode': 'semantic', 'results': docs, 'total': results[0]}
@@ -186,7 +189,12 @@ async def _semantic(client, index_name, query_text, vector_field, filt, ret, off
 
 async def _text(client, index_name, query_text, filt, ret, offset, limit):
     qs = f'({filt}) {query_text}' if filt else query_text
-    results = await ft.search(client=client, index_name=index_name, query=qs)
+    results = await ft.search(
+        client=client,
+        index_name=index_name,
+        query=qs,
+        options=FtSearchOptions(limit=FtSearchLimit(offset, limit)),
+    )
     docs = _decode_docs(results, ret)
     return {'status': 'success', 'mode': 'text', 'results': docs, 'total': results[0]}
 
@@ -223,7 +231,7 @@ async def _hybrid(client, index_name, query_text, vector_field, filt, ret, offse
         client=client,
         index_name=index_name,
         query=query,
-        options=FtSearchOptions(params={'vector': blob}),
+        options=FtSearchOptions(params={'vector': blob}, limit=FtSearchLimit(offset, limit)),
     )
     docs = _decode_docs(results, ret, skip_field=vector_field)
     return {
