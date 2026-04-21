@@ -12,18 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Document ingestion tool for Valkey Search."""
+"""Document ingestion tool for Valkey Search (GLIDE)."""
 
 import json
 import logging
-from awslabs.valkey_mcp_server.common.connection import ValkeyConnectionManager
+from awslabs.valkey_mcp_server.common.connection import get_client
 from awslabs.valkey_mcp_server.common.server import mcp
 from awslabs.valkey_mcp_server.common.utils import pack_embedding
 from awslabs.valkey_mcp_server.context import Context
 from awslabs.valkey_mcp_server.embeddings import create_embeddings_provider
+from glide import ft
+from glide_shared.commands.server_modules.ft_options.ft_create_options import (
+    DataType,
+    DistanceMetricType,
+    FtCreateOptions,
+    VectorAlgorithm,
+    VectorField,
+    VectorFieldAttributesHnsw,
+    VectorType,
+)
+from glide_shared.exceptions import RequestError
 from typing import Any, Dict, List, Optional
-from valkey.exceptions import ValkeyError
 
+
+logger = logging.getLogger(__name__)
 
 _embeddings_provider = None
 
@@ -35,43 +47,30 @@ def _acquire_embeddings_provider():
     return _embeddings_provider
 
 
-def _index_exists(r, index_name: str) -> bool:
+async def _index_exists(client, index_name: str) -> bool:
     try:
-        r.execute_command('FT.INFO', index_name)
+        await ft.info(client, index_name)
         return True
-    except ValkeyError:
+    except RequestError:
         return False
 
 
-def _auto_create_index(
-    r,
-    index_name: str,
-    prefix: str,
-    embedding_field: str,
-    dimensions: int,
-):
+async def _auto_create_index(client, index_name, prefix, embedding_field, dimensions):
     """Create a minimal vector index for auto-creation."""
-    cmd: list = [
-        'FT.CREATE',
-        index_name,
-        'ON',
-        'HASH',
-        'PREFIX',
-        '1',
-        prefix,
-        'SCHEMA',
-        embedding_field,
-        'VECTOR',
-        'HNSW',
-        '6',
-        'TYPE',
-        'FLOAT32',
-        'DIM',
-        str(dimensions),
-        'DISTANCE_METRIC',
-        'COSINE',
+    schema = [
+        VectorField(
+            embedding_field,
+            VectorAlgorithm.HNSW,
+            VectorFieldAttributesHnsw(
+                dimensions=dimensions,
+                distance_metric=DistanceMetricType.COSINE,
+                type=VectorType.FLOAT32,
+            ),
+        ),
     ]
-    r.execute_command(*cmd)
+    await ft.create(
+        client, index_name, schema, FtCreateOptions(data_type=DataType.HASH, prefixes=[prefix])
+    )
 
 
 @mcp.tool()
@@ -97,21 +96,11 @@ async def add_documents(
         id_field: Field to use as document ID (default: "id")
         prefix: Key prefix (e.g., "docs:"). Defaults to "{index_name}:"
         embedding_field: Vector field name. None = no embeddings generated.
-        text_fields: Fields to concatenate for embedding. Required with
-            embedding_field.
+        text_fields: Fields to concatenate for embedding. Required with embedding_field.
         embedding_dimensions: Vector dimensions. Auto-detected if omitted.
 
     Returns:
         Dict with "status", "added" count, "errors" count, and provider info.
-
-    Example:
-        result = await add_documents(
-            index_name="products_idx",
-            documents=[{"id": "p1", "title": "Widget", "price": 9.99}],
-            prefix="products:",
-            embedding_field="embedding",
-            text_fields=["title"]
-        )
     """
     if Context.readonly_mode():
         return {'status': 'error', 'added': 0, 'reason': 'Readonly mode'}
@@ -127,7 +116,7 @@ async def add_documents(
         prefix = f'{index_name}:'
 
     try:
-        r = ValkeyConnectionManager.get_connection(decode_responses=True)
+        client = await get_client()
         added = 0
         errors = 0
         actual_dims = embedding_dimensions
@@ -136,7 +125,7 @@ async def add_documents(
         for doc in documents:
             doc_id = doc.get(id_field)
             if doc_id is None:
-                logging.warning(f"Document missing '{id_field}', skipping")
+                logger.warning("Document missing '%s', skipping", id_field)
                 errors += 1
                 continue
 
@@ -145,7 +134,7 @@ async def add_documents(
                 for k, v in doc.items():
                     if k == id_field:
                         continue
-                    mapping[k] = json.dumps(v) if isinstance(v, (dict, list)) else v
+                    mapping[k] = json.dumps(v) if isinstance(v, (dict, list)) else str(v)
 
                 if embedding_field and text_fields:
                     text = ' '.join(str(doc.get(f, '')) for f in text_fields)
@@ -155,22 +144,18 @@ async def add_documents(
                     if actual_dims is None:
                         actual_dims = len(embedding)
                     if not index_checked:
-                        if not _index_exists(r, index_name):
-                            _auto_create_index(
-                                r,
-                                index_name,
-                                prefix,
-                                embedding_field,
-                                actual_dims,
+                        if not await _index_exists(client, index_name):
+                            await _auto_create_index(
+                                client, index_name, prefix, embedding_field, actual_dims
                             )
                         index_checked = True
 
                     mapping[embedding_field] = pack_embedding(embedding)
 
-                r.hset(f'{prefix}{doc_id}', mapping=mapping)
+                await client.hset(f'{prefix}{doc_id}', mapping)
                 added += 1
             except Exception as e:
-                logging.warning(f'Failed to process document {doc_id}: {e}')
+                logger.warning('Failed to process document %s: %s', doc_id, e)
                 errors += 1
 
         result: Dict[str, Any] = {

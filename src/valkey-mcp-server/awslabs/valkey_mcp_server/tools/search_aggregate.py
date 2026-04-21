@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""FT.AGGREGATE structured pipeline builder for Valkey Search."""
+"""FT.AGGREGATE structured pipeline builder for Valkey Search (GLIDE)."""
 
 import logging
-from awslabs.valkey_mcp_server.common.connection import ValkeyConnectionManager
+from awslabs.valkey_mcp_server.common.connection import get_client
 from awslabs.valkey_mcp_server.common.server import mcp
+from glide_shared.exceptions import RequestError
 from typing import Any, Dict, List, Optional
-from valkey.exceptions import ValkeyError
 
+
+logger = logging.getLogger(__name__)
 
 VALID_REDUCE_FUNCTIONS = {
     'COUNT',
@@ -40,25 +42,20 @@ VALID_STAGE_TYPES = {'GROUPBY', 'SORTBY', 'APPLY', 'FILTER', 'LIMIT'}
 
 
 def _build_groupby(stage: Dict[str, Any]) -> list:
-    """Build GROUPBY ... REDUCE ... args."""
     fields = stage.get('fields', [])
     args = ['GROUPBY', str(len(fields))] + fields
-
     for reducer in stage.get('reducers', []):
         func = reducer.get('function', '').upper()
         if func not in VALID_REDUCE_FUNCTIONS:
             raise ValueError(
-                f"Unknown REDUCE function '{func}'. Must be one of: {VALID_REDUCE_FUNCTIONS}"
+                f"Unknown REDUCE function '{func}'. Must be: {VALID_REDUCE_FUNCTIONS}"
             )
         args.append('REDUCE')
         args.append(func)
-
-        # Build reducer arguments
         field = reducer.get('field')
         if func == 'COUNT':
             args.append('0')
         elif func in ('QUANTILE', 'FIRST_VALUE'):
-            # These take field + extra arg
             extra = reducer.get('value')
             if field and extra is not None:
                 args += ['2', field, str(extra)]
@@ -76,16 +73,13 @@ def _build_groupby(stage: Dict[str, Any]) -> list:
             args += ['1', field]
         else:
             args.append('0')
-
         alias = reducer.get('alias')
         if alias:
             args += ['AS', alias]
-
     return args
 
 
 def _build_sortby(stage: Dict[str, Any]) -> list:
-    """Build SORTBY args."""
     fields = stage.get('fields', [])
     sort_args: list = []
     for f in fields:
@@ -101,7 +95,6 @@ def _build_sortby(stage: Dict[str, Any]) -> list:
 
 
 def _build_apply(stage: Dict[str, Any]) -> list:
-    """Build APPLY expr AS alias."""
     expr = stage.get('expression', '')
     alias = stage.get('alias', '')
     if not expr or not alias:
@@ -110,7 +103,6 @@ def _build_apply(stage: Dict[str, Any]) -> list:
 
 
 def _build_filter(stage: Dict[str, Any]) -> list:
-    """Build FILTER expr."""
     expr = stage.get('expression', '')
     if not expr:
         raise ValueError("FILTER stage requires 'expression'")
@@ -118,7 +110,6 @@ def _build_filter(stage: Dict[str, Any]) -> list:
 
 
 def _build_limit(stage: Dict[str, Any]) -> list:
-    """Build LIMIT offset count."""
     return ['LIMIT', str(stage.get('offset', 0)), str(stage.get('count', 10))]
 
 
@@ -131,22 +122,29 @@ _STAGE_BUILDERS = {
 }
 
 
-def _parse_aggregate_response(raw) -> List[Dict[str, Any]]:
-    """Parse FT.AGGREGATE raw response into list of dicts."""
-    if not raw or len(raw) < 2:
+def _decode_aggregate_response(raw) -> List[Dict[str, Any]]:
+    """Decode ft.aggregate response into list of dicts."""
+    if not raw or len(raw) < 1:
         return []
     rows = []
-    for row in raw[1:]:
-        if not isinstance(row, list):
-            continue
-        d: Dict[str, Any] = {}
-        for i in range(0, len(row) - 1, 2):
-            key = row[i].decode() if isinstance(row[i], bytes) else str(row[i])
-            val = row[i + 1]
-            if isinstance(val, bytes):
-                val = val.decode()
-            d[key] = val
-        rows.append(d)
+    # ft.aggregate returns a list; each element after index 0 is a row dict or list
+    for row in raw:
+        if isinstance(row, dict):
+            d: Dict[str, Any] = {}
+            for k, v in row.items():
+                str_k = k.decode() if isinstance(k, bytes) else str(k)
+                str_v = v.decode() if isinstance(v, bytes) else v
+                d[str_k] = str_v
+            rows.append(d)
+        elif isinstance(row, list):
+            d = {}
+            for i in range(0, len(row) - 1, 2):
+                key = row[i].decode() if isinstance(row[i], bytes) else str(row[i])
+                val = row[i + 1]
+                if isinstance(val, bytes):
+                    val = val.decode()
+                d[key] = val
+            rows.append(d)
     return rows
 
 
@@ -188,22 +186,12 @@ async def aggregate(
 
     Returns:
         Dict with "status" and "results" (list of row dicts).
-
-    Example:
-        result = await aggregate(
-            index_name="products_idx",
-            query="*",
-            pipeline=[
-                {"type": "GROUPBY", "fields": ["@category"],
-                 "reducers": [{"function": "COUNT", "alias": "count"}]},
-                {"type": "SORTBY",
-                 "fields": [{"field": "@count", "order": "DESC"}]},
-                {"type": "LIMIT", "offset": 0, "count": 5}
-            ]
-        )
     """
     try:
-        r = ValkeyConnectionManager.get_connection(decode_responses=False)
+        client = await get_client()
+
+        # Build the pipeline args for custom_command since ft.aggregate
+        # may not support all pipeline stages via its options API
         cmd: list = ['FT.AGGREGATE', index_name, query]
 
         if pipeline:
@@ -212,31 +200,27 @@ async def aggregate(
                 if stype not in VALID_STAGE_TYPES:
                     return {
                         'status': 'error',
-                        'reason': (
-                            f"Stage {i}: unknown type '{stype}'. Must be: {VALID_STAGE_TYPES}"
-                        ),
+                        'reason': f"Stage {i}: unknown type '{stype}'. Must be: {VALID_STAGE_TYPES}",
                     }
                 builder = _STAGE_BUILDERS[stype]
                 try:
                     cmd += builder(stage)
                 except ValueError as e:
-                    return {
-                        'status': 'error',
-                        'reason': f'Stage {i} ({stype}): {e}',
-                    }
+                    return {'status': 'error', 'reason': f'Stage {i} ({stype}): {e}'}
 
-        raw = r.execute_command(*cmd)
-        rows = _parse_aggregate_response(raw)
-        total = raw[0] if raw else 0
+        raw = await client.custom_command(cmd)
 
-        return {
-            'status': 'success',
-            'results': rows,
-            'total': int(total),
-        }
+        # Parse response: raw[0] is total count, raw[1:] are row data
+        total = 0
+        rows: List[Dict[str, Any]] = []
+        if isinstance(raw, list) and len(raw) > 0:
+            total = int(raw[0]) if not isinstance(raw[0], int) else raw[0]
+            rows = _decode_aggregate_response(raw[1:])
 
-    except ValkeyError as e:
+        return {'status': 'success', 'results': rows, 'total': total}
+
+    except RequestError as e:
         return {'status': 'error', 'reason': str(e)}
     except Exception as e:
-        logging.exception(f'aggregate failed: {e}')
+        logger.exception('aggregate failed: %s', e)
         return {'status': 'error', 'reason': str(e)}

@@ -12,19 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unified search tool — semantic, text, hybrid, and find-similar."""
+"""Unified search tool — semantic, text, hybrid, and find-similar (GLIDE)."""
 
-import json
 import logging
 import struct
-from awslabs.valkey_mcp_server.common.connection import ValkeyConnectionManager
+from awslabs.valkey_mcp_server.common.connection import get_client
 from awslabs.valkey_mcp_server.common.server import mcp
 from awslabs.valkey_mcp_server.common.utils import pack_embedding
 from awslabs.valkey_mcp_server.embeddings import create_embeddings_provider
+from glide import ft
+from glide_shared.commands.server_modules.ft_options.ft_search_options import (
+    FtSearchOptions,
+)
+from glide_shared.exceptions import RequestError
 from typing import Any, Dict, List, Optional
-from valkey.commands.search.query import Query
-from valkey.exceptions import ValkeyError
 
+
+logger = logging.getLogger(__name__)
 
 _embeddings_provider = None
 
@@ -44,32 +48,30 @@ def _has_provider() -> bool:
         return False
 
 
-def _parse_docs(docs, return_fields=None) -> List[Dict[str, Any]]:
-    """Parse FT.SEARCH result documents into dicts."""
-    results = []
-    for doc in docs:
-        d: Dict[str, Any] = {'id': doc.id}
-        for attr in dir(doc):
-            if attr.startswith('_') or attr in ('id', 'payload'):
-                continue
-            val = getattr(doc, attr, None)
-            if val is None or callable(val):
-                continue
-            if isinstance(val, bytes):
-                try:
-                    val = val.decode('utf-8')
-                except UnicodeDecodeError:
+def _decode_docs(results, return_fields=None, skip_field=None) -> List[Dict[str, Any]]:
+    """Decode GLIDE ft.search results into list of dicts.
+
+    GLIDE returns: [count, {b'key': {b'field': b'value', ...}, ...}]
+    """
+    count = results[0]
+    docs = []
+    if count > 0 and len(results) > 1:
+        for key, fields in results[1].items():
+            str_key = key.decode() if isinstance(key, bytes) else key
+            d: Dict[str, Any] = {'id': str_key}
+            for fk, fv in fields.items():
+                str_fk = fk.decode() if isinstance(fk, bytes) else fk
+                if str_fk == skip_field:
                     continue
-            if isinstance(val, str) and val.startswith(('{', '[')):
                 try:
-                    val = json.loads(val)
-                except (json.JSONDecodeError, ValueError):
-                    pass
-            d[attr] = val
-        if return_fields:
-            d = {k: v for k, v in d.items() if k in return_fields or k == 'id'}
-        results.append(d)
-    return results
+                    str_fv = fv.decode() if isinstance(fv, bytes) else fv
+                    d[str_fk] = str_fv
+                except (UnicodeDecodeError, AttributeError):
+                    continue
+            if return_fields:
+                d = {k: v for k, v in d.items() if k in return_fields or k == 'id'}
+            docs.append(d)
+    return docs
 
 
 @mcp.tool()
@@ -108,24 +110,15 @@ async def search(
         Dict with "status", "mode", and "results" list.
     """
     if not query_text and not document_id:
-        return {
-            'status': 'error',
-            'reason': "Provide 'query_text' or 'document_id'",
-        }
-    if filter_expression and '=>' in filter_expression:
-        return {
-            'status': 'error',
-            'reason': "'=>' not allowed in filter_expression",
-        }
+        return {'status': 'error', 'reason': "Provide 'query_text' or 'document_id'"}
 
     try:
-        r = ValkeyConnectionManager.get_connection(decode_responses=False)
-        ft = r.ft(index_name)
+        client = await get_client()
 
         if document_id:
             return await _find_similar(
-                r,
-                ft,
+                client,
+                index_name,
                 document_id,
                 vector_field,
                 filter_expression,
@@ -137,7 +130,8 @@ async def search(
         has = _has_provider()
         if has and hybrid_weight != 0.5:
             return await _hybrid(
-                ft,
+                client,
+                index_name,
                 query_text,
                 vector_field,
                 filter_expression,
@@ -148,7 +142,8 @@ async def search(
             )
         if has:
             return await _semantic(
-                ft,
+                client,
+                index_name,
                 query_text,
                 vector_field,
                 filter_expression,
@@ -157,7 +152,8 @@ async def search(
                 limit,
             )
         return await _text(
-            ft,
+            client,
+            index_name,
             query_text,
             filter_expression,
             return_fields,
@@ -165,80 +161,75 @@ async def search(
             limit,
         )
 
-    except ValkeyError as e:
+    except RequestError as e:
         return {'status': 'error', 'reason': str(e)}
     except Exception as e:
-        logging.exception(f'search failed: {e}')
+        logger.exception('search failed: %s', e)
         return {'status': 'error', 'reason': str(e)}
 
 
-async def _semantic(ft, query_text, vector_field, filt, ret, offset, limit):
+async def _semantic(client, index_name, query_text, vector_field, filt, ret, offset, limit):
     provider = _acquire_provider()
     emb = await provider.generate_embedding(query_text)
     blob = pack_embedding(emb)
     f = filt or '*'
-    q = Query(f'{f}=>[KNN {limit} @{vector_field} $blob]').paging(offset, limit)
-    res = ft.search(q, query_params={'blob': blob})
-    docs = _parse_docs(res.docs, ret) if hasattr(res, 'docs') else []
-    return {
-        'status': 'success',
-        'mode': 'semantic',
-        'results': docs,
-        'total': getattr(res, 'total', len(docs)),
-    }
+    query = f'{f}=>[KNN {limit} @{vector_field} $vector AS score]'
+    results = await ft.search(
+        client=client,
+        index_name=index_name,
+        query=query,
+        options=FtSearchOptions(params={'vector': blob}),
+    )
+    docs = _decode_docs(results, ret, skip_field=vector_field)
+    return {'status': 'success', 'mode': 'semantic', 'results': docs, 'total': results[0]}
 
 
-async def _text(ft, query_text, filt, ret, offset, limit):
+async def _text(client, index_name, query_text, filt, ret, offset, limit):
     qs = f'({filt}) {query_text}' if filt else query_text
-    q = Query(qs).paging(offset, limit)
-    res = ft.search(q)
-    docs = _parse_docs(res.docs, ret) if hasattr(res, 'docs') else []
-    return {
-        'status': 'success',
-        'mode': 'text',
-        'results': docs,
-        'total': getattr(res, 'total', len(docs)),
-    }
+    results = await ft.search(client=client, index_name=index_name, query=qs)
+    docs = _decode_docs(results, ret)
+    return {'status': 'success', 'mode': 'text', 'results': docs, 'total': results[0]}
 
 
-async def _find_similar(r, ft, doc_id, vector_field, filt, ret, offset, limit):
-    raw = r.hget(doc_id, vector_field.encode())
+async def _find_similar(client, index_name, doc_id, vector_field, filt, ret, offset, limit):
+    raw = await client.hget(doc_id, vector_field)
     if not raw:
-        return {
-            'status': 'error',
-            'reason': f"'{doc_id}' not found or no '{vector_field}' field",
-        }
+        return {'status': 'error', 'reason': f"'{doc_id}' not found or no '{vector_field}' field"}
+    if isinstance(raw, str):
+        raw = raw.encode('latin-1')
     n = len(raw) // 4
     emb = list(struct.unpack(f'{n}f', raw))
     blob = pack_embedding(emb)
     f = filt or '*'
-    q = Query(f'{f}=>[KNN {limit + 1} @{vector_field} $blob]').paging(
-        offset,
-        limit + 1,
+    query = f'{f}=>[KNN {limit + 1} @{vector_field} $vector AS score]'
+    results = await ft.search(
+        client=client,
+        index_name=index_name,
+        query=query,
+        options=FtSearchOptions(params={'vector': blob}),
     )
-    res = ft.search(q, query_params={'blob': blob})
-    docs = _parse_docs(res.docs, ret) if hasattr(res, 'docs') else []
+    docs = _decode_docs(results, ret, skip_field=vector_field)
     docs = [d for d in docs if d.get('id') != doc_id][:limit]
-    return {
-        'status': 'success',
-        'mode': 'find_similar',
-        'results': docs,
-        'total': len(docs),
-    }
+    return {'status': 'success', 'mode': 'find_similar', 'results': docs, 'total': len(docs)}
 
 
-async def _hybrid(ft, query_text, vector_field, filt, ret, offset, limit, weight):
+async def _hybrid(client, index_name, query_text, vector_field, filt, ret, offset, limit, weight):
     provider = _acquire_provider()
     emb = await provider.generate_embedding(query_text)
     blob = pack_embedding(emb)
     tf = f'({filt}) {query_text}' if filt else query_text
-    q = Query(f'{tf}=>[KNN {limit} @{vector_field} $blob]').paging(offset, limit)
-    res = ft.search(q, query_params={'blob': blob})
-    docs = _parse_docs(res.docs, ret) if hasattr(res, 'docs') else []
+    query = f'{tf}=>[KNN {limit} @{vector_field} $vector AS score]'
+    results = await ft.search(
+        client=client,
+        index_name=index_name,
+        query=query,
+        options=FtSearchOptions(params={'vector': blob}),
+    )
+    docs = _decode_docs(results, ret, skip_field=vector_field)
     return {
         'status': 'success',
         'mode': 'hybrid',
         'hybrid_weight': weight,
         'results': docs,
-        'total': getattr(res, 'total', len(docs)),
+        'total': results[0],
     }

@@ -17,35 +17,21 @@
 import argparse
 from awslabs.valkey_mcp_server.common.server import mcp
 from awslabs.valkey_mcp_server.context import Context
-from awslabs.valkey_mcp_server.tools import (
-    bitmap,  # noqa: F401
-    hash,  # noqa: F401
-    hyperloglog,  # noqa: F401
-    json,  # noqa: F401
-    list,  # noqa: F401
-    misc,  # noqa: F401
-    search_add_documents,  # noqa: F401
-    search_aggregate,  # noqa: F401
-    search_manage_index,  # noqa: F401
-    search_query,  # noqa: F401
-    server_management,  # noqa: F401
-    set,  # noqa: F401
-    sorted_set,  # noqa: F401
-    stream,  # noqa: F401
-    string,  # noqa: F401
+from awslabs.valkey_mcp_server.tools import (  # noqa: F401
+    json,
+    search_add_documents,
+    search_aggregate,
+    search_manage_index,
+    search_query,
 )
 from loguru import logger
 from starlette.requests import Request  # noqa: F401
 from starlette.responses import Response
 
 
-# Add a health check route directly to the MCP server
 @mcp.custom_route('/health', methods=['GET'])
 async def health_check(request):
-    """Simple health check endpoint for ALB Target Group.
-
-    Always returns 200 OK to indicate the service is running.
-    """
+    """Simple health check endpoint for ALB Target Group."""
     return Response(content='healthy', status_code=200, media_type='text/plain')
 
 
