@@ -38,7 +38,7 @@ class OllamaEmbeddings(EmbeddingsProvider):
         dimensions: int = 768,
     ):
         """Initialize Ollama embeddings provider."""
-        self.base_url = base_url
+        self.base_url = base_url if '://' in base_url else f'http://{base_url}'
         self.model = model
         self._dimensions = dimensions
         self._client = httpx.AsyncClient(timeout=30.0)

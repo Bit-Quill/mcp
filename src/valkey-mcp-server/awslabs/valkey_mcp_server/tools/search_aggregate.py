@@ -195,6 +195,17 @@ async def aggregate(
         cmd: list = ['FT.AGGREGATE', index_name, query]
 
         if pipeline:
+            # Collect fields referenced by reducers that need LOAD
+            load_fields: set = set()
+            for stage in pipeline:
+                if stage.get('type', '').upper() == 'GROUPBY':
+                    for reducer in stage.get('reducers', []):
+                        field = reducer.get('field')
+                        if field and reducer.get('function', '').upper() != 'COUNT':
+                            load_fields.add(field)
+            if load_fields:
+                cmd += ['LOAD', str(len(load_fields))] + list(load_fields)
+
             for i, stage in enumerate(pipeline):
                 stype = stage.get('type', '').upper()
                 if stype not in VALID_STAGE_TYPES:
@@ -210,14 +221,12 @@ async def aggregate(
 
         raw = await client.custom_command(cmd)
 
-        # Parse response: raw[0] is total count, raw[1:] are row data
-        total = 0
+        # GLIDE custom_command returns a list of row dicts for FT.AGGREGATE
         rows: List[Dict[str, Any]] = []
-        if isinstance(raw, list) and len(raw) > 0:
-            total = int(raw[0]) if not isinstance(raw[0], int) else raw[0]
-            rows = _decode_aggregate_response(raw[1:])
+        if isinstance(raw, list):
+            rows = _decode_aggregate_response(raw)
 
-        return {'status': 'success', 'results': rows, 'total': total}
+        return {'status': 'success', 'results': rows, 'total': len(rows)}
 
     except RequestError as e:
         return {'status': 'error', 'reason': str(e)}

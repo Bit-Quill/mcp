@@ -114,7 +114,6 @@ class TestAggregate:
     async def test_basic_aggregate(self, mock_client):
         mock_client.custom_command = AsyncMock(
             return_value=[
-                2,
                 {b'category': b'books', b'cnt': b'3'},
                 {b'category': b'electronics', b'cnt': b'2'},
             ]
@@ -135,7 +134,7 @@ class TestAggregate:
         assert len(result['results']) == 2
 
     async def test_no_pipeline(self, mock_client):
-        mock_client.custom_command = AsyncMock(return_value=[0])
+        mock_client.custom_command = AsyncMock(return_value=[])
         result = await aggregate(index_name='idx')
         assert result['status'] == 'success'
         assert result['total'] == 0
@@ -146,7 +145,7 @@ class TestAggregate:
         assert 'BOGUS' in result['reason']
 
     async def test_apply_and_limit(self, mock_client):
-        mock_client.custom_command = AsyncMock(return_value=[1, {b'val': b'42'}])
+        mock_client.custom_command = AsyncMock(return_value=[{b'val': b'42'}])
         result = await aggregate(
             index_name='idx',
             pipeline=[

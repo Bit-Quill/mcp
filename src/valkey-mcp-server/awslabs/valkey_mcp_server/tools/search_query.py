@@ -131,6 +131,16 @@ async def search(
             )
 
         has = _has_provider()
+        if mode == 'text' or (not mode and not has):
+            return await _text(
+                client,
+                index_name,
+                query_text,
+                filter_expression,
+                return_fields,
+                offset,
+                limit,
+            )
         if mode == 'hybrid' or (has and hybrid_weight != 0.5):
             return await _hybrid(
                 client,
@@ -143,21 +153,11 @@ async def search(
                 limit,
                 hybrid_weight,
             )
-        if has:
-            return await _semantic(
-                client,
-                index_name,
-                query_text,
-                vector_field,
-                filter_expression,
-                return_fields,
-                offset,
-                limit,
-            )
-        return await _text(
+        return await _semantic(
             client,
             index_name,
             query_text,
+            vector_field,
             filter_expression,
             return_fields,
             offset,
