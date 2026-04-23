@@ -13,8 +13,25 @@
 # limitations under the License.
 
 import struct
+from typing import Any
 
 
 def pack_embedding(embedding: list[float]) -> bytes:
     """Pack embedding vector to bytes for Valkey storage."""
     return struct.pack(f'{len(embedding)}f', *embedding)
+
+
+def decode_value(val: Any) -> Any:
+    """Recursively decode bytes in a Valkey response."""
+    if isinstance(val, bytes):
+        try:
+            return val.decode()
+        except UnicodeDecodeError:
+            return repr(val)
+    if isinstance(val, list):
+        return [decode_value(v) for v in val]
+    if isinstance(val, dict):
+        return {decode_value(k): decode_value(v) for k, v in val.items()}
+    if isinstance(val, set):
+        return [decode_value(v) for v in val]
+    return val

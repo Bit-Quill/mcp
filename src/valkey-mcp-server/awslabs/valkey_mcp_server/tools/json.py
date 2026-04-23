@@ -18,18 +18,12 @@ import json as json_stdlib
 import logging
 from awslabs.valkey_mcp_server.common.connection import get_client
 from awslabs.valkey_mcp_server.common.server import mcp
+from awslabs.valkey_mcp_server.common.utils import decode_value as _decode
 from awslabs.valkey_mcp_server.context import Context
 from typing import Any, Dict, List, Optional, Union
 
 
 logger = logging.getLogger(__name__)
-
-
-def _decode(val: Any) -> Any:
-    """Decode bytes to string if needed."""
-    if isinstance(val, bytes):
-        return val.decode()
-    return val
 
 
 @mcp.tool()

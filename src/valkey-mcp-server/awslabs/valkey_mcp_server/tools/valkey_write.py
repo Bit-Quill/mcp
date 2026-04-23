@@ -17,6 +17,7 @@
 import logging
 from awslabs.valkey_mcp_server.common.connection import get_client
 from awslabs.valkey_mcp_server.common.server import mcp
+from awslabs.valkey_mcp_server.common.utils import decode_value as _decode
 from awslabs.valkey_mcp_server.context import Context
 from typing import Any, Dict, List, Optional
 
@@ -125,22 +126,6 @@ BLOCKED_COMMANDS = frozenset(
         'CLIENT',
     }
 )
-
-
-def _decode(val: Any) -> Any:
-    """Recursively decode bytes in a response."""
-    if isinstance(val, bytes):
-        try:
-            return val.decode()
-        except UnicodeDecodeError:
-            return repr(val)
-    if isinstance(val, list):
-        return [_decode(v) for v in val]
-    if isinstance(val, dict):
-        return {_decode(k): _decode(v) for k, v in val.items()}
-    if isinstance(val, set):
-        return [_decode(v) for v in val]
-    return val
 
 
 @mcp.tool()
