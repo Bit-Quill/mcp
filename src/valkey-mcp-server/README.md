@@ -3,31 +3,42 @@
 An AWS Labs Model Context Protocol (MCP) server for Amazon ElastiCache [Valkey](https://valkey.io/) datastores.
 
 ## Features
-This MCP server provides tools to operate on Valkey data types. For example, it allows an agent to operate with Valkey Strings using commands such as SET, SETRANGE, GET, GETRANGE, APPEND, INCREMENT and more.
 
-### Supported Data Types
-- `Strings`- Store, retrieve, append, increment, decrement, length and more.
-- `Lists`- Manage List collections with push/pop operations.
-- `Sets and Sorted Sets`- Store and retrieve items from Sets.
-- `Hashes`- Store and retrieve items in Hashes. Check for existence of items in a hash, increment item values in a Hash, and more.
-- `Streams`- Store, retrieve, trim items in Streams.
-- `Bitmaps`- Bitmaps let you perform bitwise operations on strings.
-- `JSONs`- Store and retrieve JSON documents with path-based access.
-- `HyperLogLog`- Store and count items in HyperLogs.
+This MCP server provides 9 purpose-built tools for AI agents working with Valkey Search and JSON data. The tool surface is designed to minimize token costs and agent error rates by accepting structured JSON input and handling command translation internally.
 
-### Advanced Features
-- **Cluster Support**: Support for standalone and clustered Valkey deployments.
-- **SSL/TLS Security**: Configure secure connections using SSL/TLS.
-- **Connection Pooling**: Pools connections by default to enable efficient connection management.
-- **Readonly Mode**: Prevent write operations to ensure data safety.
+### Valkey AI Search — 4 tools
+
+| Tool | What It Does |
+|------|-------------|
+| `manage_index` | Create, drop, inspect, or list search indices. Accepts structured schema definitions with TEXT, NUMERIC, TAG, and VECTOR fields. Defaults to COSINE distance + HNSW algorithm. |
+| `add_documents` | Ingest documents with optional embedding generation. Supports Bedrock, OpenAI, and Ollama providers. Auto-creates the index if missing. |
+| `search` | Unified semantic, text, hybrid, and find-similar search. Auto-detects mode from parameters, or accepts an explicit `mode` override. |
+| `aggregate` | Structured pipeline builder for FT.AGGREGATE. Supports GROUPBY, SORTBY, APPLY, FILTER, and LIMIT stages with 12 REDUCE functions. |
+
+### Valkey JSON Intelligence — 5 tools
+
+| Tool | What It Does |
+|------|-------------|
+| `json_get` | Get a JSON value at a path from a Valkey key. |
+| `json_set` | Set a JSON value at a path with optional TTL. |
+| `json_arrappend` | Append values to a JSON array at a path. |
+| `json_arrpop` | Pop an element from a JSON array at a path. |
+| `json_arrtrim` | Trim a JSON array to a specified range. |
+
+### Additional Features
+
+- **Valkey-GLIDE**: Built on [Valkey GLIDE](https://github.com/valkey-io/valkey-glide) for async-native performance.
+- **Cluster Support**: Standalone and clustered Valkey deployments.
+- **SSL/TLS Security**: Secure connections via TLS.
+- **Readonly Mode**: Prevent write operations with `--readonly`.
+- **Multi-provider Embeddings**: Bedrock, OpenAI, Ollama, with automatic fallback.
 
 ## Prerequisites
 
-1. Install `uv` from [Astral](https://docs.astral.sh/uv/getting-started/installation/) or the [GitHub README](https://github.com/astral-sh/uv#installation)
+1. Install `uv` from [Astral](https://docs.astral.sh/uv/getting-started/installation/)
 2. Install Python using `uv python install 3.10`
-3. Access to a Valkey datastore.
-4. For instructions to connect to an Amazon ElastiCache/MemoryDB Valkey datastore [click here](https://github.com/awslabs/mcp/blob/main/src/valkey-mcp-server/ELASTICACHECONNECT.md).
-
+3. Access to a Valkey datastore (with search module for AI Search tools, JSON module for JSON tools).
+4. For Amazon ElastiCache/MemoryDB connection instructions, see [ELASTICACHECONNECT.md](ELASTICACHECONNECT.md).
 
 ## Installation
 
@@ -35,70 +46,34 @@ This MCP server provides tools to operate on Valkey data types. For example, it 
 |:----:|:------:|:-------:|
 | [![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=awslabs.valkey-mcp-server&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22awslabs.valkey-mcp-server%40latest%22%5D%2C%22env%22%3A%7B%22VALKEY_HOST%22%3A%22127.0.0.1%22%2C%22VALKEY_PORT%22%3A%226379%22%2C%22FASTMCP_LOG_LEVEL%22%3A%22ERROR%22%7D%7D) | [![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/en/install-mcp?name=awslabs.valkey-mcp-server&config=eyJjb21tYW5kIjoidXZ4IGF3c2xhYnMudmFsa2V5LW1jcC1zZXJ2ZXJAbGF0ZXN0IiwiZW52Ijp7IlZBTEtFWV9IT1NUIjoiMTI3LjAuMC4xIiwiVkFMS0VZX1BPUlQiOiI2Mzc5IiwiRkFTVE1DUF9MT0dfTEVWRUwiOiJFUlJPUiJ9LCJhdXRvQXBwcm92ZSI6W10sImRpc2FibGVkIjpmYWxzZX0%3D) | [![Install on VS Code](https://img.shields.io/badge/Install_on-VS_Code-FF9900?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=Valkey%20MCP%20Server&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22awslabs.valkey-mcp-server%40latest%22%5D%2C%22env%22%3A%7B%22VALKEY_HOST%22%3A%22127.0.0.1%22%2C%22VALKEY_PORT%22%3A%226379%22%2C%22FASTMCP_LOG_LEVEL%22%3A%22ERROR%22%7D%2C%22autoApprove%22%3A%5B%5D%2C%22disabled%22%3Afalse%7D) |
 
-Here are some ways you can work with MCP across AWS tools (e.g., for Kiro, `~/.kiro/settings/mcp.json`):
+### MCP Configuration
 
 ```json
 {
   "mcpServers": {
     "awslabs.valkey-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.valkey-mcp-server@latest"
-      ],
+      "args": ["awslabs.valkey-mcp-server@latest"],
       "env": {
         "VALKEY_HOST": "127.0.0.1",
         "VALKEY_PORT": "6379",
+        "EMBEDDING_PROVIDER": "ollama",
+        "OLLAMA_HOST": "http://localhost:11434",
         "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "autoApprove": [],
-      "disabled": false
+      }
     }
   }
 }
 ```
 
-To run in readonly mode:
+Readonly mode (disables all write operations):
 
 ```json
 {
   "mcpServers": {
     "awslabs.valkey-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.valkey-mcp-server@latest",
-        "--readonly"
-      ],
-      "env": {
-        "VALKEY_HOST": "127.0.0.1",
-        "VALKEY_PORT": "6379",
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "autoApprove": [],
-      "disabled": false
-    }
-  }
-}
-```
-
-### Windows Installation
-
-For Windows users, the MCP server configuration format is slightly different:
-
-```json
-{
-  "mcpServers": {
-    "awslabs.valkey-mcp-server": {
-      "disabled": false,
-      "timeout": 60,
-      "type": "stdio",
-      "command": "uv",
-      "args": [
-        "tool",
-        "run",
-        "--from",
-        "awslabs.valkey-mcp-server@latest",
-        "awslabs.valkey-mcp-server.exe"
-      ],
+      "args": ["awslabs.valkey-mcp-server@latest", "--readonly"],
       "env": {
         "VALKEY_HOST": "127.0.0.1",
         "VALKEY_PORT": "6379",
@@ -109,34 +84,7 @@ For Windows users, the MCP server configuration format is slightly different:
 }
 ```
 
-To run in readonly mode:
-
-```json
-{
-  "mcpServers": {
-    "awslabs.valkey-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "tool",
-        "run",
-        "--from",
-        "awslabs.valkey-mcp-server@latest",
-        "awslabs.valkey-mcp-server.exe",
-        "--readonly"
-      ],
-      "env": {
-        "VALKEY_HOST": "127.0.0.1",
-        "VALKEY_PORT": "6379",
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "autoApprove": [],
-      "disabled": false
-    }
-  }
-}
-```
-
-Or using Docker after a successful `docker build -t awslabs/valkey-mcp-server .`:
+### Docker
 
 ```json
 {
@@ -144,48 +92,12 @@ Or using Docker after a successful `docker build -t awslabs/valkey-mcp-server .`
     "awslabs.valkey-mcp-server": {
       "command": "docker",
       "args": [
-        "run",
-        "--rm",
-        "--interactive",
-        "--env",
-        "FASTMCP_LOG_LEVEL=ERROR",
-        "--env",
-        "VALKEY_HOST=127.0.0.1",
-        "--env",
-        "VALKEY_PORT=6379",
+        "run", "--rm", "--interactive",
+        "--env", "FASTMCP_LOG_LEVEL=ERROR",
+        "--env", "VALKEY_HOST=127.0.0.1",
+        "--env", "VALKEY_PORT=6379",
         "awslabs/valkey-mcp-server:latest"
-      ],
-      "env": {},
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}
-```
-
-To run in readonly mode with Docker:
-
-```json
-{
-  "mcpServers": {
-    "awslabs.valkey-mcp-server": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "--interactive",
-        "--env",
-        "FASTMCP_LOG_LEVEL=ERROR",
-        "--env",
-        "VALKEY_HOST=127.0.0.1",
-        "--env",
-        "VALKEY_PORT=6379",
-        "awslabs/valkey-mcp-server:latest",
-        "--readonly"
-      ],
-      "env": {},
-      "disabled": false,
-      "autoApprove": []
+      ]
     }
   }
 }
@@ -194,110 +106,86 @@ To run in readonly mode with Docker:
 ## Configuration
 
 ### Valkey Connection
-The Valkey server can be configured using the following environment variables.
-However, both *MemoryDB* and *ElastiCache Serverless* are *not* compatible with semantic search and vector search:
 
-| Name | Description                                                                                                                    | Default Value |
-|------|--------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `VALKEY_HOST` | ElastiCache Primary Endpoint or MemoryDB Cluster Endpoint or Valkey IP or hostname                                             | `"127.0.0.1"` |
-| `VALKEY_PORT` | Valkey port                                                                                                                    | `6379`        |
-| `VALKEY_USERNAME` | Default database username                                                                                                      | `None`        |
-| `VALKEY_PWD` | Default database password                                                                                                      | `""`          |
-| `VALKEY_USE_SSL` | Enables or disables SSL/TLS                                                                                                    | `False`       |
-| `VALKEY_CA_PATH` | CA certificate for verifying server                                                                                            | `None`        |
-| `VALKEY_SSL_KEYFILE` | Client's private key file                                                                                                      | `None`        |
-| `VALKEY_SSL_CERTFILE` | Client's certificate file                                                                                                      | `None`        |
-| `VALKEY_CERT_REQS` | Server certificate verification                                                                                                | `"required"`  |
-| `VALKEY_CA_CERTS` | Path to trusted CA certificates                                                                                                | `None`        |
-| `VALKEY_CLUSTER_MODE` | Enable Valkey Cluster mode                                                                                                     | `False`       |
-| `VALKEY_VECTOR_INDEX_TYPE` | Default vector index structure type to use when vector indices are created in calls to add documents (either `FLAT` or `HNSW`) | `HNSW`        |
-| `VALKEY_MAX_CONNECTIONS_PER_NODE` | Maximum number of concurrent Valkey connections per node                                                                       | `300`         |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VALKEY_HOST` | Valkey hostname or IP | `127.0.0.1` |
+| `VALKEY_PORT` | Valkey port | `6379` |
+| `VALKEY_USERNAME` | Username for authentication | `None` |
+| `VALKEY_PWD` | Password for authentication | `""` |
+| `VALKEY_USE_SSL` | Enable TLS | `false` |
+| `VALKEY_SSL_CA_PATH` | CA certificate path | `None` |
+| `VALKEY_SSL_KEYFILE` | Client private key file | `None` |
+| `VALKEY_SSL_CERTFILE` | Client certificate file | `None` |
+| `VALKEY_SSL_CERT_REQS` | Certificate verification mode | `required` |
+| `VALKEY_SSL_CA_CERTS` | Trusted CA certificates path | `None` |
+| `VALKEY_CLUSTER_MODE` | Enable cluster mode | `false` |
 
 ### Embeddings Provider
-Semantic search requires integration with an embeddings provider.
-The following environment variables are used to configure this:
 
-#### Common Embedding Configuration
-The first step is to configure the embeddings provider, which is used to generate embeddings for semantic search.
-This defaults to using the Bedrock embeddings provider, but can be configured to use any of the following:
+Embedding generation is required for semantic search in `add_documents` and `search` tools.
 
-| Name | Description                                                                    | Default Value                  |
-|------|--------------------------------------------------------------------------------|--------------------------------|
-| `EMBEDDING_PROVIDER` | Embeddings provider to use (i.e. 'Ollama', 'Bedrock', or 'OpenAI')                         | `"bedrock"`                    |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `EMBEDDING_PROVIDER` | Provider: `bedrock`, `openai`, `ollama`, or `hash` | `bedrock` |
 
 #### Bedrock
-The following environment variables are used to configure the Bedrock embeddings provider, including a number
-of optional configuration options.  Credentials for the Bedrock service must be provided using the `AWS_ACCESS_KEY_ID` and
-`AWS_SECRET_ACCESS_KEY` and/or `AWS_SESSION_TOKEN` environment variables or via `AWS_PROFILE`.
 
-| Name | Description                                                                    | Default Value                  |
-|------|--------------------------------------------------------------------------------|--------------------------------|
-| `AWS_REGION` | If Bedrock is used, this is the name of the region to interop with             | `"us-east-1"`                  |
-| `BEDROCK_MODEL_ID` | If Bedrock is used, this is the ID of the model to use to generate embeddings | `"amazon.nova-2-multimodal-embeddings-v1:0"` |
-| `BEDROCK_NORMALIZE` | If Bedrock is used, whether to normalize embeddings | `true`                         |
-| `BEDROCK_DIMENSIONS` | If Bedrock is used, number of dimensions for embeddings | `None`                         |
-| `BEDROCK_INPUT_TYPE` | If Bedrock is used, input type for embeddings (e.g., "searchDocument", "searchQuery") | `None`                         |
-| `BEDROCK_MAX_ATTEMPTS` | If Bedrock is used, maximum retry attempts for failed requests | `3`                            |
-| `BEDROCK_MAX_POOL_CONNECTIONS` | If Bedrock is used, maximum number of connections in the connection pool | `50`                           |
-| `BEDROCK_RETRY_MODE` | If Bedrock is used, retry mode for failed requests (e.g., "adaptive", "standard", "legacy") | `"adaptive"`                   |
+Credentials via `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, `AWS_PROFILE`, or IAM role.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AWS_REGION` | AWS region | `us-east-1` |
+| `BEDROCK_MODEL_ID` | Model ID | `amazon.nova-2-multimodal-embeddings-v1:0` |
+| `BEDROCK_NORMALIZE` | Normalize embeddings | `None` |
+| `BEDROCK_DIMENSIONS` | Embedding dimensions | `None` (model default) |
+| `BEDROCK_INPUT_TYPE` | Input type | `None` |
+| `BEDROCK_MAX_ATTEMPTS` | Max retry attempts | `3` |
+| `BEDROCK_MAX_POOL_CONNECTIONS` | Connection pool size | `50` |
+| `BEDROCK_RETRY_MODE` | Retry mode | `adaptive` |
 
 #### OpenAI
-The following environment variables are used to configure the OpenAI embeddings provider.
 
-| Name | Description                                                                    | Default Value                  |
-|------|--------------------------------------------------------------------------------|--------------------------------|
-| `OPENAI_API_KEY` | If OpenAI is used, this is the API key for authentication | `None`                         |
-| `OPENAI_MODEL` | If OpenAI is used, this is the model to use to generate embeddings | `"text-embedding-3-small"`     |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OPENAI_API_KEY` | API key (required) | `None` |
+| `OPENAI_MODEL` | Model name | `text-embedding-3-small` |
 
 #### Ollama
-The following environment variables are used to configure the Ollama embeddings provider.
 
-| Name | Description                                                                    | Default Value                  |
-|------|--------------------------------------------------------------------------------|--------------------------------|
-| `OLLAMA_HOST` | If Ollama is used, this is the URL pointing to the Ollama endpoint             | `"http://localhost:11434"`     |
-| `OLLAMA_EMBEDDING_MODEL` | If Ollama is used, this is the name of the model to use to generate embeddings | `nomic-embed-text`             |
-
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OLLAMA_HOST` | Ollama endpoint URL | `http://localhost:11434` |
+| `OLLAMA_EMBEDDING_MODEL` | Model name | `nomic-embed-text` |
 
 ## Example Usage
 
-Here are some example natural language queries that the server can handle:
-
 ```
-"Store user profile data in a hash"
-"Add this event to the activity stream"
-"Cache API response for 5 minutes"
-"Store JSON document with nested fields"
-"Add score 100 to user123 in leaderboard"
-"Get all members of the admins set"
+"Create a search index for product data with title, category, price, and embedding fields"
+"Add these product documents and generate embeddings from the title field"
+"Search for products similar to 'wireless headphones'"
+"Find products similar to product:123"
+"Show me the average price by category"
+"Store this JSON config and set a 1-hour TTL"
+"Get the nested value at $.settings.theme from the config key"
 ```
 
 ## Development
 
 ### Running Tests
+
 ```bash
-uv venv
-source .venv/bin/activate
-uv sync
-uv run --frozen pytest
+uv venv && source .venv/bin/activate && uv sync
+
+# Unit tests
+uv run --frozen pytest tests/ -m "not live and not integration"
+
+# Live integration tests (requires VALKEY_HOST and EMBEDDING_PROVIDER)
+uv run --frozen pytest tests/test_search_live.py -m live -v
 ```
 
 ### Building Docker Image
+
 ```bash
 docker build -t awslabs/valkey-mcp-server .
-```
-
-### Running Docker Container
-```bash
-docker run -p 8080:8080 \
-  -e VALKEY_HOST=host.docker.internal \
-  -e VALKEY_PORT=6379 \
-  awslabs/valkey-mcp-server
-```
-
-To run in readonly mode:
-```bash
-docker run -p 8080:8080 \
-  -e VALKEY_HOST=host.docker.internal \
-  -e VALKEY_PORT=6379 \
-  awslabs/valkey-mcp-server --readonly
 ```
