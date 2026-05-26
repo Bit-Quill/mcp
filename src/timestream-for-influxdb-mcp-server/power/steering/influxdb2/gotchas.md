@@ -8,6 +8,8 @@
 
 **Bucket Delete/Recreate with Read Replicas**: Deleting and recreating a bucket on the primary causes replication interruption due to bucket ID mismatch. Avoid this pattern — update the bucket instead.
 
+**Runaway Cardinality**: Since InfluxDB v2 is affected by cardinality. Having many unique tags (1,000,000+) will result in performance degradation. Avoid this. Review tags to make sure tags do not contain unique values for most entries. Consider changing tags with many unique entries to fields.
+
 ## Important — Will Cause Confusion
 
 **Password Must Be Alphanumeric**: The `--password` parameter for `create-db-instance` and `create-db-cluster` only accepts `[a-zA-Z0-9]+`. Special characters cause a `ValidationException`. If omitted, a password is auto-generated and stored in Secrets Manager.
