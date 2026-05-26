@@ -1,4 +1,4 @@
-# InfluxDB v3 Schema Design & Data Modeling
+# InfluxDB v2 Schema Design & Data Modeling
 
 ## V2 vs V3 Data Model
 
@@ -27,14 +27,13 @@ Rules:
 - Use simple, descriptive names that describe the data: `cpu`, `memory`, `http_requests`, `sensor_reading`
 - Do **not** encode data in the measurement name. `blueberries.plot-1.north` is wrong — use tags for `crop`, `plot`, `region` instead.
 - Do not use dots, hyphens, or concatenated attributes in measurement names — they force regex queries and prevent filtering.
-- Avoid SQL reserved words (`select`, `from`, `table`, `order`, `group`) — they require quoting.
+- Avoid Flux keywords (`from`, `to`, `filter`, `range`, `yield`) — they require quoting.
 - Case-sensitive: `CPU` and `cpu` are different measurements.
 
 When to use one measurement vs multiple:
 - Use **one measurement** when data shares the same tags and fields (e.g., all CPU metrics in `cpu` with fields `usage_idle`, `usage_system`, `usage_user`).
 - Use **separate measurements** when data has different tag/field schemas (e.g., `cpu` and `disk` have different fields and tags).
 - Do **not** create a measurement per entity (e.g., `cpu_server01`, `cpu_server02`) — use a `host` tag instead.
-- Be aware of the `maxTables` limit per database (default 500). Each unique measurement name creates a table.
 
 ## Tag vs Field Decision
 
@@ -54,39 +53,91 @@ Rules:
 - Avoid duplicate names for a tag key and field key within the same measurement — query results become unpredictable.
 - Sort tags alphabetically in line protocol for best write compression (both engines).
 
-InfluxDB v3 supports virtually unlimited cardinality. High-cardinality tags are safe, but each unique tag key adds a column — respect the `maxColumnsPerTable` limit (default 200).
+Cardinality considerations: Tags with high unique values directly increase series cardinality. Keep individual tags under ~100K distinct values. Total series cardinality above ~10M (varies by instance size) causes TSM degradation.
 
-## Database Design
+## Bucket Design
 
-A database is the top-level data container in V3 — there are no organizations.
+A bucket is a named container with a retention period. All data in a bucket shares the same retention policy.
 
-Design principle: same as V2 — **one database per retention period**.
+Design principle: **one bucket per retention period**. If you need 7-day and 90-day retention, create two buckets.
+
+Common patterns:
+
+| Pattern | Buckets | Use case |
+|---------|---------|----------|
+| By retention | `raw-7d`, `downsampled-90d`, `archive-365d` | Different data lifetimes |
+| By environment | `metrics-prod`, `metrics-staging` | Isolation + different retention |
+| By team/tenant | `team-a-metrics`, `team-b-metrics` | Access control via scoped tokens |
 
 Guidance:
-- Create databases via `POST /api/v3/configure/database`.
-- Retention is set via `retentionPeriod` (e.g. `"7d"`, `"90d"`, `"1y"`). Null or omitted = infinite.
-- Each database has a `maxTables` limit (default 500) — plan measurement names accordingly.
-- Each table has a `maxColumnsPerTable` limit (default 200) — this covers both tag keys and field keys.
+- The initial bucket is created automatically by `create-db-instance` — use it for your primary workload.
+- Create additional buckets via `POST /api/v2/buckets` for different retention needs.
+- Scope tokens to specific buckets for access control — one token per bucket per application.
+- Do **not** create a bucket per measurement or per host — this creates management overhead with no benefit.
+- On Timestream for InfluxDB V2, **do not delete and recreate buckets** when using read replicas — the bucket ID mismatch breaks replication. Update the bucket instead.
 
-### Database creation example
+### Bucket creation example
 
 ```bash
-curl -X POST "https://<endpoint>:8181/api/v3/configure/database" \
-  -H "Authorization: Bearer $TOKEN" \
+curl -X POST "https://<endpoint>:8086/api/v2/buckets" \
+  -H "Authorization: Token $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "downsampled-90d",
-    "retentionPeriod": "90d",
-    "maxTables": 500,
-    "maxColumnsPerTable": 200
+    "orgID": "<org-id>",
+    "retentionRules": [{ "type": "expire", "everySeconds": 7776000 }],
+    "description": "90-day downsampled metrics"
   }'
 ```
 
 ## Retention Policy
 
-Retention is configured per database via `retentionPeriod` using human-readable durations (`"7d"`, `"30d"`, `"1y"`). Null = infinite.
+Retention is configured per bucket via `retentionRules[].everySeconds`. The retention enforcement service runs every 30 minutes by default and deletes entire shard groups (not individual points) when the shard group's time range is fully beyond the retention period.
 
-Update retention via `PATCH /api/v3/configure/database/{name}`. To clear retention (keep data indefinitely), use `DELETE /api/v3/configure/database/retention?db=<name>`.
+Common retention values:
+
+| Duration | `everySeconds` | Use case |
+|----------|---------------|----------|
+| 1 hour | `3600` | Debugging / ephemeral data |
+| 1 day | `86400` | Short-term operational metrics |
+| 7 days | `604800` | Standard monitoring |
+| 30 days | `2592000` | Default for most workloads |
+| 90 days | `7776000` | Compliance / trend analysis |
+| 1 year | `31536000` | Long-term capacity planning |
+| Infinite | `0` | Never expire (use with caution — disk fills) |
+
+When data is actually deleted:
+- **Minimum**: after `retention-period` has elapsed
+- **Maximum**: after `retention-period + shard-group-duration` has elapsed
+- Shard group duration is auto-calculated from retention period. For a 7-day retention, shard group duration is typically 1 day, so data persists 7–8 days.
+- Data remains queryable until the shard group is deleted.
+
+Retention can be updated on an existing bucket via `PATCH /api/v2/buckets/{bucketID}`:
+
+```bash
+curl -X PATCH "https://<endpoint>:8086/api/v2/buckets/<bucketID>" \
+  -H "Authorization: Token $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "retentionRules": [{ "type": "expire", "everySeconds": 604800 }] }'
+```
+
+### Downsampling pattern
+
+Use a Flux task to aggregate raw data into a longer-retention bucket:
+
+1. Create `raw-7d` bucket (7-day retention) for high-resolution data
+2. Create `downsampled-90d` bucket (90-day retention) for aggregated data
+3. Schedule a task to downsample hourly:
+
+```flux
+option task = {name: "downsample-cpu", every: 1h}
+
+from(bucket: "raw-7d")
+  |> range(start: -task.every)
+  |> filter(fn: (r) => r._measurement == "cpu")
+  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
+  |> to(bucket: "downsampled-90d")
+```
 
 ## Field Type Conflicts
 
@@ -98,7 +149,7 @@ Field types are **locked on first write** per measurement per field key on both 
 | `count=10i` (integer) | `count=10.0` (float) | Error — `count` is locked as integer |
 | `status="ok"` (string) | `status=true` (boolean) | Error — `status` is locked as string |
 
-InfluxDB v3 returns **400** or **422** depending on `accept_partial` param. Same partial-write behavior.
+InfluxDB v2 returns **422**. Conflicting points are dropped; valid points in the same batch succeed (partial write).
 
 Prevention:
 - Document your schema before writing. Agree on types per field across all writers.
@@ -106,7 +157,7 @@ Prevention:
 - Be careful with numeric fields — `10` is a float, `10i` is an integer. Mixing these is the most common conflict.
 - Telegraf plugins have fixed output types — check plugin docs before adding new inputs.
 
-Detection: use `SHOW COLUMNS FROM <table>` or query `information_schema.columns`.
+Detection: use `SHOW FIELD KEYS FROM <measurement>` (InfluxQL) to check current field types.
 
 Resolution:
 - You **cannot change** a field's type after first write. Options:
@@ -120,11 +171,22 @@ A **series** is a unique combination of measurement name + tag set. Series cardi
 
 Example: `cpu,host=A,region=us` and `cpu,host=B,region=us` are 2 series.
 
-InfluxDB V3 Parquet/S3 storage engine has **virtually unlimited cardinality**. High-cardinality tags that would cripple V2 are handled efficiently. The main limits to watch are:
-- `maxTables` per database (default 500, tunable)
-- `maxColumnsPerTable` (default 200, tunable) — each tag key and field key is a column
+V2 TSM engine: performance typically degrades above **~10M series**, depending on instance size and workload. Symptoms: slow queries, high memory, compaction stalls.
 
-If a V2 user is hitting cardinality limits, migrating to V3 is the recommended long-term solution.
+Measure cardinality with Flux:
+
+```flux
+import "influxdata/influxdb/schema"
+
+schema.tagValues(bucket: "my-bucket", tag: "host")
+  |> count()
+```
+
+Reduce cardinality:
+- Move high-cardinality values from tags to fields
+- Remove unnecessary tags
+- Use bounded values (e.g., `region` not `ip_address`)
+- Delete old high-cardinality data
 
 ## Schema Examples
 
@@ -139,8 +201,7 @@ sensor_reading,device_id=D002,location=warehouse-b,type=temperature value=19.8 1
 - Measurement: `sensor_reading` (one measurement for all sensor types)
 - Tags: `device_id` (bounded set of devices), `location`, `type`
 - Field: `value` (numeric reading)
-- V2 cardinality: devices × locations × types
-- V3: same line protocol, writes to `sensor_reading` table in the target database
+- Cardinality: devices × locations × types
 
 ### Infrastructure monitoring
 
@@ -153,7 +214,6 @@ disk,host=web01,region=us-east-1,device=sda1 used_percent=45.0,free=107374182400
 - Separate measurements for `cpu`, `memory`, `disk` (different field schemas)
 - Tags: `host`, `region`, `device` (bounded)
 - Fields: numeric metrics
-- V3: creates 3 tables — count toward `maxTables` limit
 
 ### Application metrics
 
@@ -164,4 +224,4 @@ http_requests,method=POST,endpoint=/api/users,status=201 count=89i,latency_ms=12
 
 - Tags: `method`, `endpoint`, `status` (all bounded)
 - Fields: `count` (integer), `latency_ms` (float)
-- Do **not** tag `request_id` or `user_id` — high cardinality on V2, wastes column space on V3
+- Do **not** tag `request_id` or `user_id` — this causes high cardinality.
