@@ -96,7 +96,7 @@ SUBNET_2=$(aws ec2 create-subnet --vpc-id $VPC_ID \
 
 ### Create a security group and allow port 8086
 
-Port 8086 must be open inbound for InfluxDB V2 data plane access. Do this regardless of whether the VPC is new or existing.
+Port 8086 (or whichever port the instance was configured with) must be open inbound for InfluxDB V2 data plane access. Do this regardless of whether the VPC is new or existing.
 
 ```bash
 # Create security group

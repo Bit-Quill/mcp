@@ -4,8 +4,6 @@
 
 **Small Batch Writes + Many Writers**: Writing 1 record per request with hundreds of concurrent writers causes replica lag climbing to 200+ seconds. Always batch 5,000+ points per write request.
 
-**Bucket Delete/Recreate with Read Replicas**: Deleting and recreating a bucket on the primary causes replication interruption due to bucket ID mismatch. Avoid this pattern — update the bucket instead.
-
 **Processing Engine on Multi-Node**: Scheduled triggers execute on EVERY node. On small instances (db.influx.xlarge), this causes OOM (Memory Exhausted while HashAggSpill). Use `node_spec` to target specific nodes, or scale up instance type.
 
 ## Important — Will Cause Confusion
@@ -20,7 +18,7 @@
 
 **No Direct Host Access**: Cannot SSH into instances. All management is via APIs, Console, or InfluxDB UI.
 
-**V3 Core Port**: V3 Core uses port 8181 by default, not 8086 like V2.
+**V3 Port**: V3 uses port 8181 by default, not 8086 like V2.
 
 ## Operational — Will Cause Scaling Issues
 
@@ -34,7 +32,7 @@
 
 ## Cost — Will Cause Bill Shock
 
-**V3 License Fee**: Both Core and Enterprise add a per-vCPU license fee via AWS Marketplace (InfluxData). This is separate from the AWS instance cost. EDP discounts do NOT apply to Marketplace spend.
+**V3 License Fee**: Enterprise adds a per-vCPU license fee via AWS Marketplace (InfluxData). This is separate from the AWS instance cost. EDP discounts do NOT apply to Marketplace spend.
 
 **Regional Multipliers**: Pricing varies by region. sa-east-1 is 1.30x us-east-1 pricing.
 
