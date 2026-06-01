@@ -10,10 +10,15 @@
 
 ### Queries
 
+For query guidance, see [query-guide.md][./query-guide.md].
+
 ### Writes
+
+For writing guidance, see [ingestion.md](./ingestion.md).
 
 ### Schema Operations
 
+For schema operations, see [query-guide.md](./query-guide.md) and [schema-design.md](./schema-design.md).
 
 ## Workflow Examples
 
