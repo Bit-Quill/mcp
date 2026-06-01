@@ -10,7 +10,7 @@
 
 ### Queries
 
-For query guidance, see [query-guide.md][./query-guide.md].
+For query guidance, see [query-guide.md](./query-guide.md).
 
 ### Writes
 
