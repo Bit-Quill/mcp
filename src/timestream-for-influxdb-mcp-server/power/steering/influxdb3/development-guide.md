@@ -14,7 +14,7 @@ For query guidance, see [query-guide.md](./query-guide.md).
 
 ### Writes
 
-For writing guidance, see [ingestion.md](./ingestion.md).
+For ingestion and writing guidance, see [ingestion.md](./ingestion.md).
 
 ### Schema Operations
 
