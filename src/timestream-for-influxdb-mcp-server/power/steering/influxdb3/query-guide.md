@@ -16,7 +16,7 @@ Accept: application/json
 **Example**
 ```shell
 curl --request GET \
-  "https://localhost:8181/api/v3/query_sql?db=DB&q=Q" \
+  "https://localhost:8181/api/v3/query_sql?db=DATABASE_NAME&q=Q" \
   --header "Authorization: Bearer INFLUX_TOKEN"
 ```
 
@@ -32,7 +32,7 @@ Accept: application/json
 JSON body, for POST request:
 ```json
 {
-  "db": "<database name>",
+  "db": "<DATABASE_NAME>",
   "q": "<SQL query>",
   "format": "json",
   "params": "<JSON object containing parameters to be used in a parameterized query>"
@@ -45,7 +45,7 @@ curl --request POST \
   "https://localhost:8181/api/v3/query_sql" \
   --header "Authorization: Bearer INFLUX_TOKEN" \
   --header "Content-Type: application/json" \
-  --data-raw '{"db":"mydb","format":"json","params":{},"q":"SELECT * FROM mytable"}'
+  --data-raw '{"db":"DATABASE_NAME","format":"json","params":{},"q":"SELECT * FROM mytable"}'
 ```
 
 **NOTE**: Setting `"format"` to `"jsonl"` is preferred because it streams data back to the client. Keep in mind that this means query response bodies must be read, otherwise queries will be considered cancelled by InfluxDB.
@@ -300,7 +300,7 @@ Accept: text/csv
 JSON body, for POST request:
 ```json
 {
-  "db": "<database name>",
+  "db": "<DATABASE_NAME>",
   "q": "<InfluxQL query>",
   "chunk_size": 10000,
   "chunked": true,
@@ -317,7 +317,7 @@ curl --request POST \
   --data-raw '{
   "chunk_size": 10000,
   "chunked": false,
-  "db": "DB",
+  "db": "DATABASE_NAME",
   "epoch": "ns",
   "pretty": false,
   "q": "Q"
