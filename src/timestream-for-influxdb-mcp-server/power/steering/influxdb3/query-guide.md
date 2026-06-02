@@ -274,7 +274,7 @@ Accept: text/csv
 
 The `query` endpoint supports the following query parameters:
 - `chunked`: Returns points in streamed batches. When set to `true`, InfluxDB chunks responses by series or by every 10,000 points, whichever occurs first.
-- `chunked_size`: Specifies the number of points to include in a chunk, if `chunked` is `true`.
+- `chunk_size`: Specifies the number of points to include in a chunk, if `chunked` is `true`.
 - `db`: Required. Database name.
 - `epoch`: Timestamp precision. Valid values are: `h`, `m`, `s`, `ms`, `us`, and `ns`.
 - `u`: For query string authentication, the user's username.
