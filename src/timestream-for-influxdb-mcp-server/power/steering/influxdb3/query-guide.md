@@ -230,7 +230,6 @@ InfluxQL can be executed using either the `/api/v3/query_influxql` or the `/quer
 ```
 GET /api/v3/query_influxql?db=DATABASE_NAME&q=SELECT+*+FROM+TABLE_NAME+LIMIT+10
 Authorization: Bearer <token>
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -264,7 +263,6 @@ or
 ```
 GET /query?db=DATABASE_NAME&q=QUERY&chunk_size=10000&chunked=true&u=USERNAME&p=PASSWORD
 Authorization: Bearer <token>
-Content-Type: application/csv
 Accept: text/csv
 ```
 
