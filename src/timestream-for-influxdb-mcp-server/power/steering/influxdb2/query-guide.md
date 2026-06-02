@@ -24,14 +24,11 @@ For example:
 ```shell
 curl \
   --request POST \
-  http://localhost:8086/api/v2/query?orgID=ORG_ID
-  \
-  --header 'Authorization: Token API_TOKEN
-' \
+  http://localhost:8086/api/v2/query?orgID=ORG_ID \
+  --header 'Authorization: Token API_TOKEN' \
   --header 'Accept: application/csv' \
   --header 'Content-Type: application/vnd.flux' \
-  --data 'from(bucket:"BUCKET_NAME
-")
+  --data 'from(bucket:"BUCKET_NAME")
         |> range(start: -12h)
         |> filter(fn: (r) => r._measurement == "example-measurement")
         |> aggregateWindow(every: 1h, fn: mean)'
