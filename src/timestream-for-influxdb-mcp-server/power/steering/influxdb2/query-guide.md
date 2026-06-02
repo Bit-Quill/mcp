@@ -34,6 +34,79 @@ curl \
         |> aggregateWindow(every: 1h, fn: mean)'
 ```
 
+or
+
+```
+POST /api/v2/query
+Authorization: Token <token>
+Content-Type: application/json
+Accept: application/csv
+```
+
+JSON body:
+- `dialect`: Options for tabular data output. Default output is annotated CSV with headers. [See W3 metadata vocabulary for tabular data](https://www.w3.org/TR/2015/REC-tabular-metadata-20151217/#dialect-descriptions).
+- `extern`: Represents a source from a file with a list of Flux statements.
+- `now`: Specifies the time that should be treated as the current time. Default is the server's current time.
+- `query`: Required. The query to execute.
+- `type`: The type of query. Must be `flux`.
+
+For example:
+```shell
+curl --request POST \
+  "http://localhost:8086/api/v2/query" \
+  --header "Authorization: Bearer INFLUX_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data-raw '{
+  "dialect": {},
+  "extern": {},
+  "now": "NOW",
+  "query": "QUERY",
+  "type": "flux"
+}'
+
+Change InfluxDB URL
+```
+
+Passing `"dialect": {}` and `"extern": {}` (as above) just means "use defaults / inject nothing". Both are defined in InfluxData's OpenAPI source, not the prose docs — see [`Query.yml`](https://github.com/influxdata/openapi/blob/master/src/common/schemas/Query.yml), [`Dialect.yml`](https://github.com/influxdata/openapi/blob/master/src/common/schemas/Dialect.yml), and [`File.yml`](https://github.com/influxdata/openapi/blob/master/src/common/schemas/File.yml).
+
+### `dialect` — output (annotated CSV) formatting
+
+| Field | Meaning | Default |
+|-------|---------|---------|
+| `annotations` | Annotation rows to include: any of `group`, `datatype`, `default` | `[]` (none) |
+| `header` | Include the column-name header row | `true` |
+| `delimiter` | Column separator (single char) | `,` |
+| `commentPrefix` | Prefix marking annotation rows | `#` |
+| `dateTimeFormat` | `RFC3339` or `RFC3339Nano` (nanosecond precision) | `RFC3339` |
+
+The Flux CSV parsers expect the full annotation set, so for round-trippable output set `"annotations": ["group","datatype","default"]`.
+
+### `extern` — a Flux AST prepended to the query
+
+`extern` is a Flux **AST `File`** node whose `body` is a list of statements injected before your `query`. Use it to supply variables without string-concatenating values into the query text. Example — inject `mybucket = "telegraf"`:
+
+```json
+{
+  "type": "flux",
+  "query": "from(bucket: mybucket) |> range(start: -1h)",
+  "extern": {
+    "type": "File",
+    "body": [
+      {
+        "type": "VariableAssignment",
+        "id":   { "type": "Identifier", "name": "mybucket" },
+        "init": { "type": "StringLiteral", "value": "telegraf" }
+      }
+    ]
+  }
+}
+```
+
+InfluxDB runs `mybucket = "telegraf"` then the query. `init` accepts any Flux expression node (`StringLiteral`, `IntegerLiteral`, `ObjectExpression`, …). This is how Grafana injects its `v` time-range record.
+
+- **Simpler alternative:** for plain value injection use `params` instead — `"params": {"mybucket":"telegraf"}` with `query: "from(bucket: params.mybucket) ..."`. You **cannot** use `params` and `extern` together.
+- **Generating the AST:** don't hand-write it — POST Flux text to `/api/v2/query/ast` (or run `flux ast`) to get the JSON for `extern`.
+
 ## Flux Patterns
 
 ### Basic filter
