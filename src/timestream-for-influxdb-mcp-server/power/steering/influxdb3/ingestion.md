@@ -36,7 +36,7 @@ Type is inferred on first write and locked — writing a different type to the s
 ## Write Endpoints
 
 ```
-POST /api/v3/write_lp?db=<database>&precision=<ns|us|ms|s>
+POST /api/v3/write_lp?db=<database>&precision=<auto|nanosecond|microsecond|millisecond|second>
 Authorization: Bearer <token>
 Content-Type: text/plain
 ```
@@ -52,7 +52,7 @@ Content-Type: text/plain
 V3 also supports the V2 write endpoint for migration:
 
 ```
-POST /api/v2/write?bucket=<database>&precision=<ns|us|ms|s>
+POST /api/v2/write?bucket=<database>&precision=<auto|nanosecond|microsecond|millisecond|second>
 Authorization: Bearer <token>
 Content-Type: text/plain
 ```
