@@ -16,7 +16,7 @@ Accept: application/csv
 Raw body: '<flux script>'
 
 - `Accept: application/csv` is required — Flux always returns CSV. Omitting it causes a 400.
-- `type: "flux"` is required.
+- `Content-Type: application/vnd.flux` is required.
 - Use org ID (not name) in the `orgID` query param.
 - Include the header `Accept-Encoding: gzip` for responses over 1.4 KB. Using compression saves network bandwidth but increases server-side load.
 
@@ -29,7 +29,7 @@ curl \
   --header 'Authorization: Token API_TOKEN
 ' \
   --header 'Accept: application/csv' \
-  --header 'Content-type: application/vnd.flux' \
+  --header 'Content-Type: application/vnd.flux' \
   --data 'from(bucket:"BUCKET_NAME
 ")
         |> range(start: -12h)
