@@ -9,7 +9,6 @@ V3 supports two query languages:
 ```
 GET /api/v3/query_sql?db=DATABASE_NAME&q=SELECT+*+FROM+TABLE_NAME+LIMIT+10
 Authorization: Bearer <token>
-Content-Type: application/json
 Accept: application/json
 ```
 
