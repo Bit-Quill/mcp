@@ -43,7 +43,7 @@ Content-Type: text/plain
 
 - No `org` parameter — V3 has no organizations.
 - `db` is the database name (required).
-- `accept_partial` (boolean, default false) — when true, valid points succeed even if some fail.
+- `accept_partial` (boolean, default true) — when true, valid points succeed even if some fail.
 - Default port is **8181** (not 8086 like V2).
 - Auth uses `Bearer` prefix (not `Token`).
 
