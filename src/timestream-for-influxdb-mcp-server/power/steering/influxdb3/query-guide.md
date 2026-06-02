@@ -233,6 +233,12 @@ Authorization: Bearer <token>
 Accept: application/json
 ```
 
+The `query_influxql` endpoint supports the following query parameters:
+- `db`: The name of the database. If you provide a query that specifies the database, you can omit the ‘db’ parameter from your request.
+- `q`: Required. The query to execute.
+- `format`: The format of the response. Valid options are: `json`, `jsonl`, `csv`, `pretty`, or `parquet`. `jsonl` is preferred because it streams results back to the client. `pretty` is for human-readable output. The default is `json`.
+- `params`: JSON-encoded query parameters for parameterized queries.
+
 **Example**
 ```shell
 curl --request GET \
@@ -255,7 +261,7 @@ curl --request POST \
   "https://localhost:8181/api/v3/query_influxql" \
   --header "Authorization: Bearer INFLUX_TOKEN" \
   --header "Content-Type: application/json" \
-  --data-raw '{"db":"mydb","format":"json","params":{},"q":"SELECT * FROM mytable"}'
+  --data-raw '{"db":"DATABASE_NAME","format":"json","params":{},"q":"SELECT * FROM mytable"}'
 ```
 
 or
@@ -265,6 +271,15 @@ GET /query?db=DATABASE_NAME&q=QUERY&chunk_size=10000&chunked=true&u=USERNAME&p=P
 Authorization: Bearer <token>
 Accept: text/csv
 ```
+
+The `query` endpoint supports the following query parameters:
+- `chunked`: Returns points in streamed batches. When set to `true`, InfluxDB chunks responses by series or by every 10,000 points, whichever occurs first.
+- `chunked_size`: Specifies the number of points to include in a chunk, if `chunked` is `true`.
+- `db`: Required. Database name.
+- `epoch`: Timestamp precision. Valid values are: `h`, `m`, `s`, `ms`, `us`, and `ns`.
+- `u`: For query string authentication, the user's username.
+- `p`: For query string authentication, the user's password. InfluxDB v3 enterprise expects this to be a token with read access to the database and will ignore `u`.
+- `q`: The InfluxQL query to execute.
 
 **Example**
 ```shell
