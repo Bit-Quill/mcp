@@ -24,7 +24,13 @@ from(bucket: "my-bucket")
 `v.timeRangeStart`/`v.timeRangeStop` bind the panel to Grafana's time picker; `v.windowPeriod` is the auto-interval for `aggregateWindow`.
 
 ### InfluxQL (alternative)
-Set **Query language: InfluxQL**. InfluxQL needs a **DBRP mapping** (database/retention-policy → bucket) on the instance; without it queries return no databases. Configure **Database**, and use **Token** auth (header `Authorization: Token <token>`). Use Flux instead unless you need InfluxQL compatibility.
+Set **Query language: InfluxQL**. InfluxQL needs a **DBRP mapping** (database/retention-policy → bucket) on the instance; without it queries return no databases. Configure **Database**, and use **Token** auth (header `Authorization: Token <token>`). Use Flux instead, unless you need InfluxQL compatibility.
+
+Example panel query:
+```sql
+SELECT mean("usage") FROM "my-bucket"."cpu" WHERE $timeFilter GROUP BY time($__interval) fill(null)
+```
+In Grafana, the `$timeFilter` macro expands to the panel's time range (the InfluxQL equivalent of Flux's `v.timeRangeStart`/`v.timeRangeStop`), and `$__interval` is the auto-interval for the `GROUP BY time(...)` bucket. For raw rows without aggregation, use `SELECT "usage" FROM "cpu" WHERE $timeFilter`.
 
 ## Building dashboards
 - Use the visual query builder or raw editor in the panel. **Time series** and **Stat** panels cover most metrics; **Table** for raw rows.
