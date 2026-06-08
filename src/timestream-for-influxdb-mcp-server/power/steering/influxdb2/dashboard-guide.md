@@ -12,7 +12,7 @@ Grafana ships a built-in **InfluxDB** data source plugin. Add it via **Connectio
 ### Flux (recommended for v2)
 Set **Query language: Flux**, then provide:
 - **Organization:** your InfluxDB org name.
-- **Token:** a data-plane token with read access (retrieve from Secrets Manager / InfluxDB UI — see `influxdb2/onboarding.md`).
+- **Token:** a data-plane token with read access (retrieve from InfluxDB UI — see `influxdb2/onboarding.md`).
 - **Default Bucket:** optional.
 
 Example panel query:
