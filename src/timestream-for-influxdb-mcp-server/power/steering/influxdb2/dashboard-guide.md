@@ -3,7 +3,7 @@
 How to visualize **Timestream for InfluxDB v2** data in Grafana.
 
 ## Data source
-Grafana ships a built-in **InfluxDB** data source plugin. Add it via **Connections → Data sources → InfluxDB**. The plugin supports three query languages; for v2 use **Flux** (primary) or **InfluxQL**.
+Grafana ships a built-in [**InfluxDB** data source plugin](https://grafana.com/docs/grafana/latest/datasources/influxdb/). Add it via **Connections → Data sources → InfluxDB**. The plugin supports three query languages; for v2 use **Flux** (primary) or **InfluxQL**.
 
 ### Connection settings
 - **URL:** `https://<INSTANCE_ENDPOINT>:8086` (v2 default port).
