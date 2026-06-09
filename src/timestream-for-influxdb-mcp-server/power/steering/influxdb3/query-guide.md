@@ -9,14 +9,13 @@ V3 supports two query languages:
 ```
 GET /api/v3/query_sql?db=DATABASE_NAME&q=SELECT+*+FROM+TABLE_NAME+LIMIT+10
 Authorization: Bearer <token>
-Content-Type: application/json
 Accept: application/json
 ```
 
 **Example**
 ```shell
 curl --request GET \
-  "https://localhost:8181/api/v3/query_sql?db=DB&q=Q" \
+  "https://localhost:8181/api/v3/query_sql?db=DATABASE_NAME&q=Q" \
   --header "Authorization: Bearer INFLUX_TOKEN"
 ```
 
@@ -32,7 +31,7 @@ Accept: application/json
 JSON body, for POST request:
 ```json
 {
-  "db": "<database name>",
+  "db": "<DATABASE_NAME>",
   "q": "<SQL query>",
   "format": "json",
   "params": "<JSON object containing parameters to be used in a parameterized query>"
@@ -45,7 +44,7 @@ curl --request POST \
   "https://localhost:8181/api/v3/query_sql" \
   --header "Authorization: Bearer INFLUX_TOKEN" \
   --header "Content-Type: application/json" \
-  --data-raw '{"db":"mydb","format":"json","params":{},"q":"SELECT * FROM mytable"}'
+  --data-raw '{"db":"DATABASE_NAME","format":"json","params":{},"q":"SELECT * FROM mytable"}'
 ```
 
 **NOTE**: Setting `"format"` to `"jsonl"` is preferred because it streams data back to the client. Keep in mind that this means query response bodies must be read, otherwise queries will be considered cancelled by InfluxDB.
@@ -91,8 +90,6 @@ LEFT JOIN
 LIKE
 LIMIT
 NOT
-EXISTS
-NOT IN
 OR
 ORDER BY
 FULL OUTER JOIN
@@ -101,7 +98,6 @@ SELECT
 TOP
 TYPE
 UNION
-UNION ALL
 WHERE
 WITH
 ```
@@ -231,9 +227,14 @@ InfluxQL can be executed using either the `/api/v3/query_influxql` or the `/quer
 ```
 GET /api/v3/query_influxql?db=DATABASE_NAME&q=SELECT+*+FROM+TABLE_NAME+LIMIT+10
 Authorization: Bearer <token>
-Content-Type: application/json
 Accept: application/json
 ```
+
+The `query_influxql` endpoint supports the following query parameters:
+- `db`: The name of the database. If you provide a query that specifies the database, you can omit the ‘db’ parameter from your request.
+- `q`: Required. The query to execute.
+- `format`: The format of the response. Valid options are: `json`, `jsonl`, `csv`, `pretty`, or `parquet`. `jsonl` is preferred because it streams results back to the client. `pretty` is for human-readable output. The default is `json`.
+- `params`: JSON-encoded query parameters for parameterized queries.
 
 **Example**
 ```shell
@@ -257,7 +258,7 @@ curl --request POST \
   "https://localhost:8181/api/v3/query_influxql" \
   --header "Authorization: Bearer INFLUX_TOKEN" \
   --header "Content-Type: application/json" \
-  --data-raw '{"db":"mydb","format":"json","params":{},"q":"SELECT * FROM mytable"}'
+  --data-raw '{"db":"DATABASE_NAME","format":"json","params":{},"q":"SELECT * FROM mytable"}'
 ```
 
 or
@@ -265,9 +266,17 @@ or
 ```
 GET /query?db=DATABASE_NAME&q=QUERY&chunk_size=10000&chunked=true&u=USERNAME&p=PASSWORD
 Authorization: Bearer <token>
-Content-Type: application/csv
 Accept: text/csv
 ```
+
+The `query` endpoint supports the following query parameters:
+- `chunked`: Returns points in streamed batches. When set to `true`, InfluxDB chunks responses by series or by every 10,000 points, whichever occurs first.
+- `chunk_size`: Specifies the number of points to include in a chunk, if `chunked` is `true`.
+- `db`: Required. Database name.
+- `epoch`: Timestamp precision. Valid values are: `h`, `m`, `s`, `ms`, `us`, and `ns`.
+- `u`: For query string authentication, the user's username.
+- `p`: For query string authentication, the user's password. InfluxDB v3 enterprise expects this to be a token with read access to the database and will ignore `u`.
+- `q`: The InfluxQL query to execute.
 
 **Example**
 ```shell
@@ -288,7 +297,7 @@ Accept: text/csv
 JSON body, for POST request:
 ```json
 {
-  "db": "<database name>",
+  "db": "<DATABASE_NAME>",
   "q": "<InfluxQL query>",
   "chunk_size": 10000,
   "chunked": true,
@@ -305,7 +314,7 @@ curl --request POST \
   --data-raw '{
   "chunk_size": 10000,
   "chunked": false,
-  "db": "DB",
+  "db": "DATABASE_NAME",
   "epoch": "ns",
   "pretty": false,
   "q": "Q"

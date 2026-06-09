@@ -61,7 +61,7 @@ V3 also adds two in-memory caches that accelerate common patterns:
 
 ## Query Languages
 
-- **V2:** **Flux** is the primary language; **InfluxQL** is also supported.
+- **V2:** **Flux** is the primary language; **InfluxQL** is also supported, **SQL** is not.
 - **V3:** **SQL** is the primary language (via DataFusion); a v1-compatible **InfluxQL** endpoint is provided for legacy apps. **Flux is not supported.**
 
 There is **no automatic Flux-to-SQL conversion**. Migrating from V2 to V3 requires rewriting all Flux queries, tasks, and dashboards into SQL or InfluxQL.
@@ -92,9 +92,38 @@ There is **no automatic Flux-to-SQL conversion**. Migrating from V2 to V3 requir
 - **Migration checklist (V2 → V3):** rewrite Flux → SQL/InfluxQL; map orgs/buckets → databases/tables; switch auth `Token` → `Bearer` and port `8086` → `8181`; re-point writers (or use V3's v2-compatible write endpoint); re-provision as a cluster (Core or Enterprise).
 - **No turnkey data migration:** the engines share no storage format, and managed V2 blocks host access (so the OSS `influxd inspect export-lp` disk dump is unavailable). Data must move through the **query API**: extract from V2 as annotated CSV or a DataFrame (V2 cannot emit line protocol from queries), then load into V3 — the InfluxDB 3 Python client's `write_file()` (CSV/JSON/Parquet/…) and `write_dataframe()` are the most capable loaders. Full runbook: `influxdb2/migrations.md`.
 
+## Retrieving tokens
+
+To interact with your deployed Timestream for InfluxDB instance or cluster, creating buckets, executing queries, ingesting data, etc., using the InfluxDB v2 or v3 HTTP APIs, you must retrieve or create an InfluxDB token.
+
+### V2
+
+Once your v2 instance or cluster has been deployed, create a new operator token, using the [Influx v2 CLI](https://docs.influxdata.com/influxdb/v2/tools/influx-cli/?section=influxdb%252Fv2%252Ftools):
+
+```shell
+influx config create --config-name CONFIG_NAME1  --host-url "https://yourinstanceid.eu-central-1.timestream-influxdb.amazonaws.com:8086" --org [YOURORG]  --username-password [YOURUSERNAME] --active
+
+influx auth create --org [YOURORG] --operator
+```
+
+### V3
+
+After you have deployed a Timestream for InfluxDB v3 cluster, a secret in AWS Secrets Manager will be associated with your cluster. The ID of this secret will be returned as part of the `aws timestream-influxdb get-db-cluster` AWS CLI call and is visible in the AWS console.
+
+Given the cluster ID, you can retrieve your token with the following command, replacing `<cluster ID>` with your cluster ID:
+```shell
+aws secretsmanager \
+  get-secret-value \
+  --secret-id READONLY-InfluxDB-auth-parameters-<cluster ID> \
+  --query SecretString \
+  --output text | jq -r '.token'
+```
+
 ## Sources
 
 - [What is Timestream for InfluxDB?](https://docs.aws.amazon.com/timestream/latest/developerguide/timestream-for-influxdb.html)
 - [Amazon Timestream for InfluxDB 3](https://docs.aws.amazon.com/timestream/latest/developerguide/influxdb3.html)
 - [Features and workflows with Amazon Timestream for InfluxDB 3](https://aws.amazon.com/blogs/database/features-and-workflows-with-amazon-timestream-for-influxdb-3/)
 - [Timestream for InfluxDB 3 workload analysis and best practices](https://aws.amazon.com/blogs/database/timestream-for-influxdb-3-workload-analysis-and-best-practices/)
+- [InfluxDB v2 HTTP API](https://docs.influxdata.com/influxdb/v2/api/?section=influxdb%252Fv2%252Fapi)
+- [InfluxDB v3 HTTP API](https://docs.influxdata.com/influxdb3/enterprise/api/)
