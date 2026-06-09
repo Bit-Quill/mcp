@@ -125,3 +125,5 @@ aws secretsmanager \
 - [Amazon Timestream for InfluxDB 3](https://docs.aws.amazon.com/timestream/latest/developerguide/influxdb3.html)
 - [Features and workflows with Amazon Timestream for InfluxDB 3](https://aws.amazon.com/blogs/database/features-and-workflows-with-amazon-timestream-for-influxdb-3/)
 - [Timestream for InfluxDB 3 workload analysis and best practices](https://aws.amazon.com/blogs/database/timestream-for-influxdb-3-workload-analysis-and-best-practices/)
+- [InfluxDB v2 HTTP API](https://docs.influxdata.com/influxdb/v2/api/?section=influxdb%252Fv2%252Fapi)
+- [InfluxDB v3 HTTP API](https://docs.influxdata.com/influxdb3/enterprise/api/)
