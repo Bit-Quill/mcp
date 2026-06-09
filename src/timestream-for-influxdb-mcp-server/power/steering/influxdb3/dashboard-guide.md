@@ -24,6 +24,40 @@ GROUP BY 1 ORDER BY 1
 ### InfluxQL (alternative)
 Set **Query language: InfluxQL** to reuse legacy v1-style queries against v3's compatibility endpoint. Use SQL for new dashboards — it is the native, best-supported path.
 
+InfluxQL ships several time-series functions that have no direct SQL equivalent. They run against v3's InfluxQL compatibility endpoint and are useful in panels (`$timeFilter` and `$__interval` are the Grafana macros for the panel time range and auto-interval):
+
+- **Rate of change** of a counter, per second. Use the non-negative variant to ignore counter resets:
+  ```sql
+  SELECT non_negative_derivative(mean("usage"), 1s) FROM "cpu" WHERE $timeFilter GROUP BY time($__interval)
+  ```
+- **Smoothing** with a moving average over N points:
+  ```sql
+  SELECT moving_average(mean("usage"), 5) FROM "cpu" WHERE $timeFilter GROUP BY time($__interval)
+  ```
+- **Percentile** (e.g. p95) for latency-style panels:
+  ```sql
+  SELECT percentile("usage", 95) FROM "cpu" WHERE $timeFilter
+  ```
+- **Top-N** points:
+  ```sql
+  SELECT top("usage", 5) FROM "cpu" WHERE $timeFilter
+  ```
+- **Cumulative sum** and **point-to-point difference**:
+  ```sql
+  SELECT cumulative_sum(mean("usage")) FROM "cpu" WHERE $timeFilter GROUP BY time($__interval)
+  SELECT difference(mean("usage")) FROM "cpu" WHERE $timeFilter GROUP BY time($__interval)
+  ```
+- **Spread / median / stddev** aggregations in a single panel:
+  ```sql
+  SELECT spread("usage"), median("usage"), stddev("usage") FROM "cpu" WHERE $timeFilter
+  ```
+- **Gap filling** for continuous lines — `fill(previous)` carries the last value forward, `fill(linear)` interpolates:
+  ```sql
+  SELECT mean("usage") FROM "cpu" WHERE $timeFilter GROUP BY time($__interval) fill(previous)
+  ```
+
+> Not every InfluxQL function is implemented in v3 — for example `sample()` and `holt_winters()` return an error. Prefer SQL for anything not covered here.
+
 ### Arrow Flight SQL (optional)
 v3's native high-performance protocol is Arrow Flight SQL. The community **FlightSQL** Grafana data source plugin can connect over gRPC for lower-latency querying, but the built-in InfluxDB data source (SQL) is the simplest and recommended starting point.
 
