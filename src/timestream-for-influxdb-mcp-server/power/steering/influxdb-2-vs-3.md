@@ -61,7 +61,7 @@ V3 also adds two in-memory caches that accelerate common patterns:
 
 ## Query Languages
 
-- **V2:** **Flux** is the primary language; **InfluxQL** is also supported.
+- **V2:** **Flux** is the primary language; **InfluxQL** is also supported, **SQL** is not.
 - **V3:** **SQL** is the primary language (via DataFusion); a v1-compatible **InfluxQL** endpoint is provided for legacy apps. **Flux is not supported.**
 
 There is **no automatic Flux-to-SQL conversion**. Migrating from V2 to V3 requires rewriting all Flux queries, tasks, and dashboards into SQL or InfluxQL.
