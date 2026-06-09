@@ -28,7 +28,7 @@ Set **Query language: InfluxQL**. InfluxQL needs a **DBRP mapping** (database/re
 
 Example panel query:
 ```sql
-SELECT mean("usage") FROM "my-bucket"."cpu" WHERE $timeFilter GROUP BY time($__interval) fill(null)
+SELECT mean("usage") FROM "cpu" WHERE $timeFilter GROUP BY time($__interval) fill(null)
 ```
 In Grafana, the `$timeFilter` macro expands to the panel's time range (the InfluxQL equivalent of Flux's `v.timeRangeStart`/`v.timeRangeStop`), and `$__interval` is the auto-interval for the `GROUP BY time(...)` bucket. For raw rows without aggregation, use `SELECT "usage" FROM "cpu" WHERE $timeFilter`.
 
