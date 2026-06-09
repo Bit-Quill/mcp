@@ -106,3 +106,4 @@ To dashboard the health of the Timestream for InfluxDB instance (CPU, memory, wr
 ## See also
 - Ingestion via Telegraf: [`integrations/telegraf`](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/integrations/telegraf)
 - [Grafana InfluxDB data source docs](https://grafana.com/docs/grafana/latest/datasources/influxdb/)
+- Multiagent observability with Grafana: [`sample_apps/python/multiagent_observability`](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/sample_apps/python/multiagent_observability#grafana-dashboard-overview).
