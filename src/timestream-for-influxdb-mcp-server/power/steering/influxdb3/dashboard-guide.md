@@ -163,6 +163,42 @@ curl -X POST "https://<grafana-host>/apis/dashboard.grafana.app/v1/namespaces/de
 ```
 Add more objects to the `panels` array — each with its own `gridPos` — to build a multi-panel dashboard. Set `"type": "stat"` for a single-value Stat panel or `"type": "table"` for a raw-rows Table panel.
 
+### Example: reference the variable in a panel query
+Filter the panel by the selected `host` value. In InfluxQL, wrap the variable in a regex match (`=~ /^$host$/`) — Grafana interpolates multi-value selections as a regex like `(host1|host2)`:
+```sql
+SELECT mean("usage") FROM "cpu" WHERE ("host" =~ /^$host$/) AND $timeFilter GROUP BY time($__interval) fill(null)
+```
+In SQL, compare against the variable directly — Grafana substitutes the selected value into the string, so quote it like any string literal:
+```sql
+SELECT date_bin($__interval, time) AS time, mean(usage) AS usage
+FROM cpu
+WHERE $__timeFilter(time) AND host = '$host'
+GROUP BY 1 ORDER BY 1
+```
+For a **multi-value** variable, use `IN` with the `:singlequote` format so each selected value is quoted: `... AND host IN (${host:singlequote})`.
+### Example: one series per tag value
+`GROUP BY` a tag to render a separate line per host in a **Time series** panel:
+```sql
+SELECT mean("usage") FROM "cpu" WHERE $timeFilter GROUP BY time($__interval), "host" fill(null)
+```
+SQL equivalent — select the `host` tag as a column and add it to the `GROUP BY`; Grafana renders each distinct `host` as its own series:
+```sql
+SELECT date_bin($__interval, time) AS time, host, mean(usage) AS usage
+FROM cpu
+WHERE $__timeFilter(time)
+GROUP BY 1, host ORDER BY 1
+```
+
+### Example: Table panel for raw rows
+For a **Table** panel showing raw, unaggregated rows, select the fields directly and skip the `date_bin(...)`/`GROUP BY`:
+```sql
+SELECT time, host, usage
+FROM cpu
+WHERE $__timeFilter(time)
+ORDER BY time DESC
+LIMIT 100
+```
+
 ## See also
 - Ingestion via Telegraf: [`integrations/telegraf`](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/integrations/telegraf)
 - [Grafana InfluxDB data source docs](https://grafana.com/docs/grafana/latest/datasources/influxdb/)
