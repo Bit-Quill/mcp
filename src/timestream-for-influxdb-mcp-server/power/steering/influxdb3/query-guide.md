@@ -123,7 +123,7 @@ WITH
 '2022-01-31T06:30:30.123Z'     -- (RFC3339) 
 '2022-01-31T06:30:30.123'      -- (RFC3339-like)
 '2022-01-31 06:30:30.123'      -- (RFC3339-like)
-'2022-01-31 06:30:30'          -- ((RFC3339-like, no fractional seconds) 
+'2022-01-31 06:30:30'          -- (RFC3339-like, no fractional seconds) 
 to_timestamp_nanos(1643610630123000000)   -- (Unix epoch nanoseconds to a timestamp)
 to_timestamp(1643610630)                  -- (Unix epoch seconds to a timestamp)
 ```
