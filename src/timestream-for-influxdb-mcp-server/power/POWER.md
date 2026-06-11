@@ -34,18 +34,14 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
 	- ALWAYS load when there is ambiguity in InfluxDB versions
 	- ALWAYS load on migrations between InfluxDB 2 and 3
 
-- [ ] `line-protocol.md` - Explains InfluxData's line protocol specification, with best practices and limitations
-	- SHOULD load when working with line protocol
-
 - [ ] `glossary.md` - Glossary of terms related to InfluxDB
 	- SHOULD load when there is vagueness in terminology or overlapping concepts
-
 
 - [ ] `troubleshooting.md` - Common errors while working with InfluxDB and how to solve them
 	- SHOULD load on errors or when debugging
 
 - `influxdb3/`
-	- [ ] `developer-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
+	- [ ] `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
 	- [ ] `query-guide.md` - Query examples (SQL, InfluxQL)
 	- [ ] `troubleshooting.md` - Common errors in InfluxDB 3 and how to solve them
 	- [ ] `migrations.md`
@@ -55,17 +51,35 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
 		- [ ] InfluxDB Cloud -> Timestream for InfluxDB 3
 	- [ ] `dashboard-guide.md` - Generate grafana dashboards and visualizations
 		- SHOULD load when building Grafana dashboards or visualizations
+	- [ ] `schema-design.md` - Schema modeling: tables, tags vs. fields, cardinality
+		- ALWAYS load when designing or modifying schema (table/tag/field choices, cardinality planning)
+	- [ ] `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
+		- ALWAYS load when writing data or ingesting via line protocol
+	- [ ] `parameters.md` - InfluxDBv3 Core/Enterprise parameter reference and duration formats
+		- SHOULD load when configuring or tuning cluster/database parameters
+	- [ ] `gotchas.md` - Common gotchas & pain points: batching, cardinality, replica lag, limits
+		- SHOULD load when ingesting at scale or diagnosing performance/limit issues
+	- [ ] `onboarding.md` - Interactive get-started: provision cluster, retrieve token, first write/query
+		- SHOULD load when getting started or provisioning a new cluster
 
 - `influxdb2/`
-	- [ ] `developer-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
+	- [ ] `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
 	- [ ] `query-guide.md` - Query examples (Flux, InfluxQL)
 	- [ ] `troubleshooting.md` - Common errors in InfluxDB 2 and how to solve them
-	- [ ] `migrations`
+	- [ ] `migrations.md`
 		- ALWAYS load when migrating to or from Timestream for InfluxDB 2 (OSS -> v2, or v2 -> v3)
 		- [ ] Timestream for InfluxDB (2) -> Timestream for InfluxDB 3
 		- [ ] OSS -> Timestream for InfluxDB (2)
 	- [ ] `dashboard-guide.md` - Generate grafana dashboards and visualizations
 		- SHOULD load when building Grafana dashboards or visualizations
+	- [ ] `schema-design.md` - Schema modeling: buckets/measurements, tags vs. fields, cardinality
+		- ALWAYS load when designing or modifying schema (measurement/tag/field choices, cardinality planning)
+	- [ ] `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
+		- ALWAYS load when writing data or ingesting via line protocol
+	- [ ] `gotchas.md` - Common gotchas & pain points: cardinality, batching, limits
+		- SHOULD load when ingesting at scale or diagnosing performance/limit issues
+	- [ ] `onboarding.md` - Interactive get-started: provisioning through first write and query
+		- SHOULD load when getting started or provisioning a new instance
 
 
 ## Available MCP Tools

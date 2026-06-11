@@ -24,8 +24,6 @@
 
 **10K Tables Limit**: Default max tables per database. Siemens hit this. Increasing beyond recommendation requires understanding compaction and query performance implications.
 
-**S3 Endpoint for Private V3**: Private V3 instances require an S3 VPC endpoint in the same account VPC. Without it, writes fail silently or timeout.
-
 **Compactor Node OOM**: In V3 Enterprise, uneven load distribution can cause compactor nodes to OOM. Monitor `system.parquet_files` for growing file counts. Consider dedicated compactor nodes.
 
 **IO Threads Default**: V3 default is 2 IO threads (`--num-io-threads`). Often insufficient for production workloads. Tune via parameter group.
