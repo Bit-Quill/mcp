@@ -26,60 +26,62 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
 
 ## Available Steering Files
 
-- [x] `getting-started.md` - InfluxDB guidelines and operational Rules
-	- ALWAYS load before implementing schema changes or database operations
-	- MAY load when planning database application design
+- `getting-started.md` - InfluxDB guidelines and operational Rules
+    - ALWAYS load before implementing schema changes or database operations
+    - MAY load when planning database application design
 
-- [ ] `influxdb-2-vs-3.md` - Highlights key differences between InfluxDB 2 and 3
-	- ALWAYS load when there is ambiguity in InfluxDB versions
-	- ALWAYS load on migrations between InfluxDB 2 and 3
+- `influxdb-2-vs-3.md` - Highlights key differences between InfluxDB 2 and 3
+    - ALWAYS load when there is ambiguity in InfluxDB versions
+    - ALWAYS load on migrations between InfluxDB 2 and 3
 
-- [ ] `glossary.md` - Glossary of terms related to InfluxDB
-	- SHOULD load when there is vagueness in terminology or overlapping concepts
+- `glossary.md` - Glossary of terms related to InfluxDB
+    - SHOULD load when there is vagueness in terminology or overlapping concepts
 
-- [ ] `troubleshooting.md` - Common errors while working with InfluxDB and how to solve them
-	- SHOULD load on errors or when debugging
+- `troubleshooting.md` - Common errors while working with InfluxDB and how to solve them
+    - SHOULD load on errors or when debugging
 
 - `influxdb3/`
-	- [ ] `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
-	- [ ] `query-guide.md` - Query examples (SQL, InfluxQL)
-	- [ ] `troubleshooting.md` - Common errors in InfluxDB 3 and how to solve them
-	- [ ] `migrations.md`
-		- ALWAYS load when migrating between InfluxDB versions or products (OSS/Core, Enterprise, or InfluxDB Cloud -> Timestream for InfluxDB 3)
-		- [ ] OSS (Core) -> Timestream for InfluxDB 3
-		- [ ] Core -> Enterprise
-		- [ ] InfluxDB Cloud -> Timestream for InfluxDB 3
-	- [ ] `dashboard-guide.md` - Generate grafana dashboards and visualizations
-		- SHOULD load when building Grafana dashboards or visualizations
-	- [ ] `schema-design.md` - Schema modeling: tables, tags vs. fields, cardinality
-		- ALWAYS load when designing or modifying schema (table/tag/field choices, cardinality planning)
-	- [ ] `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
-		- ALWAYS load when writing data or ingesting via line protocol
-	- [ ] `parameters.md` - InfluxDBv3 Core/Enterprise parameter reference and duration formats
-		- SHOULD load when configuring or tuning cluster/database parameters
-	- [ ] `gotchas.md` - Common gotchas & pain points: batching, cardinality, replica lag, limits
-		- SHOULD load when ingesting at scale or diagnosing performance/limit issues
-	- [ ] `onboarding.md` - Interactive get-started: provision cluster, retrieve token, first write/query
-		- SHOULD load when getting started or provisioning a new cluster
+    - `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
+    - `query-guide.md` - Query examples (SQL, InfluxQL)
+    - `troubleshooting.md` - Common errors in InfluxDB 3 and how to solve them
+    - `migrations.md`
+        - ALWAYS load when migrating between InfluxDB versions or products (OSS/Core, Enterprise, or InfluxDB Cloud -> Timestream for InfluxDB 3)
+        - OSS (Core) -> Timestream for InfluxDB 3
+        - Core -> Enterprise
+        - InfluxDB Cloud -> Timestream for InfluxDB 3
+    - `dashboard-guide.md` - Generate grafana dashboards and visualizations
+        - SHOULD load when building Grafana dashboards or visualizations
+    - `schema-design.md` - Schema modeling: tables, tags vs. fields, cardinality
+        - ALWAYS load when designing or modifying schema (table/tag/field choices, cardinality planning)
+    - `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
+        - ALWAYS load when writing data or ingesting via line protocol
+		- SHOULD load when using line protocol in the context of InfluxDB v2
+    - `parameters.md` - InfluxDBv3 Core/Enterprise parameter reference and duration formats
+        - SHOULD load when configuring or tuning cluster/database parameters
+    - `gotchas.md` - Common gotchas & pain points: batching, cardinality, replica lag, limits
+        - SHOULD load when ingesting at scale or diagnosing performance/limit issues
+    - `onboarding.md` - Interactive get-started: provision cluster, retrieve token, first write/query
+        - SHOULD load when getting started or provisioning a new cluster
 
 - `influxdb2/`
-	- [ ] `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
-	- [ ] `query-guide.md` - Query examples (Flux, InfluxQL)
-	- [ ] `troubleshooting.md` - Common errors in InfluxDB 2 and how to solve them
-	- [ ] `migrations.md`
-		- ALWAYS load when migrating to or from Timestream for InfluxDB 2 (OSS -> v2, or v2 -> v3)
-		- [ ] Timestream for InfluxDB (2) -> Timestream for InfluxDB 3
-		- [ ] OSS -> Timestream for InfluxDB (2)
-	- [ ] `dashboard-guide.md` - Generate grafana dashboards and visualizations
-		- SHOULD load when building Grafana dashboards or visualizations
-	- [ ] `schema-design.md` - Schema modeling: buckets/measurements, tags vs. fields, cardinality
-		- ALWAYS load when designing or modifying schema (measurement/tag/field choices, cardinality planning)
-	- [ ] `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
-		- ALWAYS load when writing data or ingesting via line protocol
-	- [ ] `gotchas.md` - Common gotchas & pain points: cardinality, batching, limits
-		- SHOULD load when ingesting at scale or diagnosing performance/limit issues
-	- [ ] `onboarding.md` - Interactive get-started: provisioning through first write and query
-		- SHOULD load when getting started or provisioning a new instance
+    - `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
+    - `query-guide.md` - Query examples (Flux, InfluxQL)
+    - `troubleshooting.md` - Common errors in InfluxDB 2 and how to solve them
+    - `migrations.md`
+        - ALWAYS load when migrating to or from Timestream for InfluxDB 2 (OSS -> v2, or v2 -> v3)
+        -  Timestream for InfluxDB (2) -> Timestream for InfluxDB 3
+        -  OSS -> Timestream for InfluxDB (2)
+    - `dashboard-guide.md` - Generate grafana dashboards and visualizations
+        - SHOULD load when building Grafana dashboards or visualizations
+    - `schema-design.md` - Schema modeling: buckets/measurements, tags vs. fields, cardinality
+        - ALWAYS load when designing or modifying schema (measurement/tag/field choices, cardinality planning)
+    - `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
+        - ALWAYS load when writing data or ingesting via line protocol
+		- SHOULD load when using line protocol in the context of InfluxDB v3
+    - `gotchas.md` - Common gotchas & pain points: cardinality, batching, limits
+        - SHOULD load when ingesting at scale or diagnosing performance/limit issues
+    - `onboarding.md` - Interactive get-started: provisioning through first write and query
+        - SHOULD load when getting started or provisioning a new instance
 
 
 ## Available MCP Tools
@@ -100,9 +102,9 @@ The InfluxDB 3 MCP Server provides tools for data operations (read/write), datab
 Prerequisites:
 - A configured AWS profile
 - (Optional) Provide instance (or cluster) details:
-	- `INFLUXDB_URL`: "https://your-influxdb-2-endpoint:8086"
-	- `INFLUXDB_TOKEN`: "your-influxdb-2-token"
-	- `INFLUXDB_ORG`: "your-influxdb-org"
+    - `INFLUXDB_URL`: "https://your-influxdb-2-endpoint:8086"
+    - `INFLUXDB_TOKEN`: "your-influxdb-2-token"
+    - `INFLUXDB_ORG`: "your-influxdb-org"
 
 Note that this MCP server can be used to deploy both instances (V2) and clusters (V2, V3).
 
@@ -111,9 +113,9 @@ Note that this MCP server can be used to deploy both instances (V2) and clusters
 Prerequisites:
 - Set up the InfluxDB 3 MCP Server. [See here](https://github.com/influxdata/influxdb3_mcp_server?tab=readme-ov-file#2-integration-with-mcp-clients) for instructions.
 - An existing InfluxDB 3 instance (or cluster). The following details are required:
-	- `INFLUX_DB_INSTANCE_URL`: "https://your-influxdb-3-endpoint:8181"
-	- `INFLUX_DB_TOKEN`: "your-influxdb-3-token"
-	- `INFLUX_DB_PRODUCT_TYPE`: "core"
+    - `INFLUX_DB_INSTANCE_URL`: "https://your-influxdb-3-endpoint:8181"
+    - `INFLUX_DB_TOKEN`: "your-influxdb-3-token"
+    - `INFLUX_DB_PRODUCT_TYPE`: "core"
 
 > See [mcp.json](./mcp.json) for an example configuration.
 
