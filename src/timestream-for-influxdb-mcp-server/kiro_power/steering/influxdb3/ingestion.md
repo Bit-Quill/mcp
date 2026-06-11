@@ -197,3 +197,7 @@ On 400 (malformed line protocol), the entire batch is rejected. On 422 (type con
 | `walMaxWriteBufferSize` | 100000 | Increase for bursty write workloads |
 | `ingestQueryInstances` | 2 | Increase for overall throughput |
 | `queryOnlyInstances` | 0 | Increase for higher query throughput |
+
+## Line Protocol
+
+For information on the line protocol data format, see [line-protocol.md](../line-protocol.md).
