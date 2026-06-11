@@ -148,7 +148,7 @@ for use with other coding assistants.
 ### Kiro Power
 
 To setup the Kiro power:
-1. Install directly from the [Kiro Powers Registry](https://kiro.dev/launch/powers/amazon-timestream-influxdb/)
+1. Install directly from the [Kiro Powers Registry](https://kiro.dev/launch/powers/amazon-timestream-for-influxdb/)
 2. Once redirected to the Power in the IDE either:
    1. Select the **`Try Power`** button. Suggested for people who want:
       - The AI to guide MCP server setup
