@@ -181,7 +181,7 @@ When a user asks how to write data — read `development-guide.md`. Key facts:
 When a user asks about databases, tables, retention, or cardinality — read `schema-design.md`. Key facts:
 - Design databases by retention period
 - Measurements become tables automatically on first write
-- Virtually unlimited cardinality; watch `maxTables` (default 500) and `maxColumnsPerTable` (default 200)
+- Virtually unlimited cardinality; watch the **10,000-table** limit (across all databases) and the **500-column-per-table** limit ([docs](https://docs.influxdata.com/influxdb3/enterprise/admin/databases/#database-table-and-column-limits))
 
 ### Querying
 

@@ -17,7 +17,7 @@ Key differences:
 - V3 has **no organizations** — databases are the top-level container.
 - V3 measurements become **tables** automatically on first write. Tables have explicit column schemas.
 - V3 has **no practical cardinality limit** — the Parquet/S3 storage engine handles high-cardinality workloads that would degrade V2's TSM engine.
-- V3 databases have `maxTables` (default 500) and `maxColumnsPerTable` (default 200) limits that can be tuned.
+- V3 (Enterprise/Core) limits tables to **10,000 across all databases** (default, set by the `--num-table-limit` server config — not a per-database limit) and **500 columns per table** (1 timestamp + up to 499 tag/field columns). These are server-level limits and are **not exposed in the Timestream parameter group**. See [Database, table, and column limits](https://docs.influxdata.com/influxdb3/enterprise/admin/databases/#database-table-and-column-limits).
 
 ## Measurement Naming
 
@@ -34,7 +34,7 @@ When to use one measurement vs multiple:
 - Use **one measurement** when data shares the same tags and fields (e.g., all CPU metrics in `cpu` with fields `usage_idle`, `usage_system`, `usage_user`).
 - Use **separate measurements** when data has different tag/field schemas (e.g., `cpu` and `disk` have different fields and tags).
 - Do **not** create a measurement per entity (e.g., `cpu_server01`, `cpu_server02`) — use a `host` tag instead.
-- Be aware of the `maxTables` limit per database (default 500). Each unique measurement name creates a table.
+- Be aware of the **10,000-table limit across all databases** (each unique measurement name creates a table).
 
 ## Tag vs Field Decision
 
@@ -54,7 +54,7 @@ Rules:
 - Avoid duplicate names for a tag key and field key within the same measurement — query results become unpredictable.
 - Sort tags alphabetically in line protocol for best write compression (both engines).
 
-InfluxDB v3 supports virtually unlimited cardinality. High-cardinality tags are safe, but each unique tag key adds a column — respect the `maxColumnsPerTable` limit (default 200).
+InfluxDB v3 supports virtually unlimited cardinality. High-cardinality tags are safe, but each unique tag key adds a column — respect the **500-columns-per-table limit** (1 timestamp + up to 499 tag/field columns).
 
 ## Database Design
 
@@ -65,8 +65,8 @@ Design principle: same as V2 — **one database per retention period**.
 Guidance:
 - Create databases via `POST /api/v3/configure/database`.
 - Retention is set via `retentionPeriod` (e.g. `"7d"`, `"90d"`, `"1y"`). Null or omitted = infinite.
-- Each database has a `maxTables` limit (default 500) — plan measurement names accordingly.
-- Each table has a `maxColumnsPerTable` limit (default 200) — this covers both tag keys and field keys.
+- Tables are limited to **10,000 across all databases** (default) — plan measurement names accordingly.
+- Each table is limited to **500 columns** (1 timestamp + up to 499 tag/field keys).
 
 ### Database creation example
 
@@ -75,10 +75,8 @@ curl -X POST "https://<endpoint>:8181/api/v3/configure/database" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "downsampled-90d",
-    "retentionPeriod": "90d",
-    "maxTables": 500,
-    "maxColumnsPerTable": 200
+    "db": "downsampled-90d",
+    "retention_period": "90d"
   }'
 ```
 
@@ -121,8 +119,8 @@ A **series** is a unique combination of measurement name + tag set. Series cardi
 Example: `cpu,host=A,region=us` and `cpu,host=B,region=us` are 2 series.
 
 InfluxDB V3 Parquet/S3 storage engine has **virtually unlimited cardinality**. High-cardinality tags that would cripple V2 are handled efficiently. The main limits to watch are:
-- `maxTables` per database (default 500, tunable)
-- `maxColumnsPerTable` (default 200, tunable) — each tag key and field key is a column
+- **10,000 tables across all databases** (default; server-level `--num-table-limit`, not tunable via the Timestream parameter group)
+- **500 columns per table** (1 timestamp + up to 499 tag/field columns) — each tag key and field key is a column
 
 If a V2 user is hitting cardinality limits, migrating to V3 is the recommended long-term solution.
 
@@ -153,7 +151,7 @@ disk,host=web01,region=us-east-1,device=sda1 used_percent=45.0,free=107374182400
 - Separate measurements for `cpu`, `memory`, `disk` (different field schemas)
 - Tags: `host`, `region`, `device` (bounded)
 - Fields: numeric metrics
-- V3: creates 3 tables — count toward `maxTables` limit
+- V3: creates 3 tables — count toward the 10,000-table limit (across all databases)
 
 ### Application metrics
 

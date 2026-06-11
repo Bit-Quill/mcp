@@ -67,9 +67,9 @@ Patterns and endpoints: [`query-guide.md`](./query-guide.md).
 
 See [`schema-design.md`](./schema-design.md) and [`gotchas.md`](./gotchas.md).
 
-- **Hitting the ~10,000-tables-per-database limit** — this is the default cap. Raising it
-  has compaction/query-performance implications; revisit your table/measurement split
-  first.
+- **Hitting the ~10,000-tables limit (across all databases)** — this is the default cap
+  (`--num-table-limit`, not exposed in the Timestream parameter group). Revisit your
+  table/measurement split first; raising it has compaction/query-performance implications.
 - **Unexpected field-type errors on write** — see `422` above; the first write fixes the
   type.
 

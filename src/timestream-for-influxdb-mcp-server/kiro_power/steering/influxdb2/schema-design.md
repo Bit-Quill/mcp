@@ -17,7 +17,7 @@ Key differences:
 - V3 has **no organizations** — databases are the top-level container.
 - V3 measurements become **tables** automatically on first write. Tables have explicit column schemas.
 - V3 has **no practical cardinality limit** — the Parquet/S3 storage engine handles high-cardinality workloads that would degrade V2's TSM engine.
-- V3 databases have `maxTables` (default 500) and `maxColumnsPerTable` (default 200) limits that can be tuned.
+- V3 (Enterprise/Core) limits tables to **10,000 across all databases** (default, set by the `--num-table-limit` server config — not a per-database limit) and **500 columns per table** (1 timestamp + up to 499 tag/field columns). These are server-level limits and are **not exposed in the Timestream parameter group**. See [Database, table, and column limits](https://docs.influxdata.com/influxdb3/enterprise/admin/databases/#database-table-and-column-limits).
 
 ## Measurement Naming
 
