@@ -26,7 +26,7 @@
 
 **Compactor Node OOM**: In V3 Enterprise, uneven load distribution can cause compactor nodes to OOM. Monitor `system.parquet_files` for growing file counts. Consider dedicated compactor nodes.
 
-**IO Threads Default**: V3 default is 2 IO threads (`--num-io-threads`). Often insufficient for production workloads. Tune via parameter group.
+**DataFusion Threads**: V3 has **no IO-threads parameter** (`num-io-threads` does not exist in the parameter group). To tune query parallelism, set `dataFusionNumThreads` (and related `dataFusionRuntime*` options) via the parameter group.
 
 ## Cost — Will Cause Bill Shock
 

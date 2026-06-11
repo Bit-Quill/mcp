@@ -281,5 +281,5 @@ Task `status`: `active` (runs on schedule) | `inactive` (paused). Use `PATCH /ap
 - Filter on tags (indexed) before fields (not indexed) in `filter()` calls
 - Use `aggregateWindow` instead of `window` + `reduce` for standard aggregations — it's optimized
 - For "current state" queries (latest value per series), use `last()` after a short range rather than scanning all time
-- Tune `query-concurrency` and `query-max-memory-bytes` in the parameter group for high-concurrency workloads
-- If queries timeout, increase `http-read-timeout` in the parameter group
+- Tune `queryConcurrency` and `queryMaxMemoryBytes` in the parameter group for high-concurrency workloads
+- If queries timeout, increase `httpReadTimeout` in the parameter group
