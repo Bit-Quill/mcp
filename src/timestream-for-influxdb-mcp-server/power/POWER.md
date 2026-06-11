@@ -40,6 +40,9 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
 - `troubleshooting.md` - Common errors while working with InfluxDB and how to solve them
     - SHOULD load on errors or when debugging
 
+- `line-protocol.md` - Details the text-based format used when writing to InfluxDB v2 and v3
+	- SHOULD load when writing or using line protocol
+
 - `influxdb3/`
     - `development-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
     - `query-guide.md` - Query examples (SQL, InfluxQL)
@@ -55,7 +58,6 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
         - ALWAYS load when designing or modifying schema (table/tag/field choices, cardinality planning)
     - `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
         - ALWAYS load when writing data or ingesting via line protocol
-		- SHOULD load when using line protocol in the context of InfluxDB v2
     - `parameters.md` - InfluxDBv3 Core/Enterprise parameter reference and duration formats
         - SHOULD load when configuring or tuning cluster/database parameters
     - `gotchas.md` - Common gotchas & pain points: batching, cardinality, replica lag, limits
@@ -77,7 +79,6 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
         - ALWAYS load when designing or modifying schema (measurement/tag/field choices, cardinality planning)
     - `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
         - ALWAYS load when writing data or ingesting via line protocol
-		- SHOULD load when using line protocol in the context of InfluxDB v3
     - `gotchas.md` - Common gotchas & pain points: cardinality, batching, limits
         - SHOULD load when ingesting at scale or diagnosing performance/limit issues
     - `onboarding.md` - Interactive get-started: provisioning through first write and query
