@@ -90,9 +90,9 @@ name several concepts differently:
 - **Read-replica cluster** — V2 multi-node deployment that adds read-serving nodes
   (adds a license fee).
 - **Cluster** — V3's only deployment shape (`create-db-cluster`).
-- **Core (`InfluxDBV3Core`)** — single-node V3 cluster; no dedicated compactor; best for
+- **Core — single-node V3 cluster; no dedicated compactor; best for
   recent data. Uses an open-source binary with more limitations than Enterprise.
-- **Enterprise (`InfluxDBV3Enterprise`)** — multi-node V3 cluster (up to 15 nodes) with
+- **Enterprise — multi-node V3 cluster (up to 15 nodes) with
   role separation; adds a per-node AWS Marketplace license.
 - **Parameter group** — immutable named set of engine parameters; change by creating a
   new group and reassigning it (which triggers a reboot).
