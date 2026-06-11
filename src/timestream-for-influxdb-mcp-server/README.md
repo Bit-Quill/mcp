@@ -131,3 +131,28 @@ The Timestream for InfluxDB MCP server provides the following tools:
 ##### Organization Management
 - `InfluxDBListOrgs`: List all organizations in InfluxDB
 - `InfluxDBCreateOrg`: Create a new organization in InfluxDB
+
+## AI Rules
+
+This repository also contains AI Rules (Steering). These markdown files serve as simple
+context and guidance for best practices and patterns that AI assistants automatically apply
+when generating code to improve the quality of agentic development.
+
+Recommended path:
+* [Kiro Power](#kiro-power) - button-click installation
+
+Alternative:
+The [Timestream for InfluxDB power](https://github.com/awslabs/mcp/tree/main/src/timestream-for-influxdb-mcp-server/power/) can also be cloned into your tool's respective `rules` directory
+for use with other coding assistants.
+
+### Kiro Power
+
+To setup the Kiro power:
+1. Install directly from the [Kiro Powers Registry](https://kiro.dev/launch/powers/amazon-aurora-dsql/)
+2. Once redirected to the Power in the IDE either:
+   1. Select the **`Try Power`** button. Suggested for people who want:
+      - The AI to guide MCP server setup
+      - An interactive onboarding experience with Timestream for InfluxDB to create a new instance or cluster
+   2. Open a new Kiro chat and ask anything related to Timestream for InfluxDB
+      - The Kiro agent will automatically activate the power if it identifies the power as valuable for completing
+        the user's task.
