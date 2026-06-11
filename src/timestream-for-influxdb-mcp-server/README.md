@@ -142,13 +142,13 @@ Recommended path:
 * [Kiro Power](#kiro-power) - button-click installation
 
 Alternative:
-The [Timestream for InfluxDB power](https://github.com/awslabs/mcp/tree/main/src/timestream-for-influxdb-mcp-server/power/) can also be cloned into your tool's respective `rules` directory
+The [Timestream for InfluxDB power](https://github.com/awslabs/mcp/tree/main/src/timestream-for-influxdb-mcp-server/kiro_power/) can also be cloned into your tool's respective `rules` directory
 for use with other coding assistants.
 
 ### Kiro Power
 
 To setup the Kiro power:
-1. Install directly from the [Kiro Powers Registry](https://kiro.dev/launch/powers/amazon-aurora-dsql/)
+1. Install directly from the [Kiro Powers Registry](https://kiro.dev/launch/powers/amazon-timestream-influxdb/)
 2. Once redirected to the Power in the IDE either:
    1. Select the **`Try Power`** button. Suggested for people who want:
       - The AI to guide MCP server setup
