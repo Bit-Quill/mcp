@@ -53,3 +53,8 @@ Python bridge, chunked by time range: `v2.query_data_frame(range)` → `v3.write
 
 ### Validate
 After loading, compare per-table row counts and cardinality between source and target, and spot-check a few time ranges (`SELECT count(*)`, min/max timestamps, sample rows) before decommissioning the V2 instance.
+
+## AWS migration tools and documentation
+- **InfluxDB OSS 2.x → Timestream for InfluxDB** — the AWS InfluxDB migration script automates the extract/load flow described above. Walkthrough: [Use the AWS InfluxDB migration script to migrate your InfluxDB OSS 2.x data to Amazon Timestream for InfluxDB](https://aws.amazon.com/blogs/database/use-the-aws-influxdb-migration-script-to-migrate-your-influxdb-oss-2-x-data-to-amazon-timestream-for-influxdb/).
+- **Other migration tools and guides** — see the [awslabs/amazon-timestream-tools](https://github.com/awslabs/amazon-timestream-tools) repository, including the [InfluxDB v1 → v2 migration guide](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/guides/influxdb_v1_to_v2_migration).
+- **Service documentation** — [Amazon Timestream for InfluxDB (InfluxDB 2) developer guide](https://docs.aws.amazon.com/timestream/latest/developerguide/timestream-for-influxdb.html).

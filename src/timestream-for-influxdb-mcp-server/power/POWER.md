@@ -49,19 +49,23 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
 	- [ ] `query-guide.md` - Query examples (SQL, InfluxQL)
 	- [ ] `troubleshooting.md` - Common errors in InfluxDB 3 and how to solve them
 	- [ ] `migrations.md`
+		- ALWAYS load when migrating between InfluxDB versions or products (OSS/Core, Enterprise, or InfluxDB Cloud -> Timestream for InfluxDB 3)
 		- [ ] OSS (Core) -> Timestream for InfluxDB 3
 		- [ ] Core -> Enterprise
 		- [ ] InfluxDB Cloud -> Timestream for InfluxDB 3
 	- [ ] `dashboard-guide.md` - Generate grafana dashboards and visualizations
+		- SHOULD load when building Grafana dashboards or visualizations
 
 - `influxdb2/`
 	- [ ] `developer-guide.md` - Contains guide for managing instances/clusters, queries/writes, example workflows
 	- [ ] `query-guide.md` - Query examples (Flux, InfluxQL)
 	- [ ] `troubleshooting.md` - Common errors in InfluxDB 2 and how to solve them
 	- [ ] `migrations`
+		- ALWAYS load when migrating to or from Timestream for InfluxDB 2 (OSS -> v2, or v2 -> v3)
 		- [ ] Timestream for InfluxDB (2) -> Timestream for InfluxDB 3
 		- [ ] OSS -> Timestream for InfluxDB (2)
 	- [ ] `dashboard-guide.md` - Generate grafana dashboards and visualizations
+		- SHOULD load when building Grafana dashboards or visualizations
 
 
 ## Available MCP Tools
