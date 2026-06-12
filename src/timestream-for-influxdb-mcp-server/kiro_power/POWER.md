@@ -79,6 +79,8 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
         - ALWAYS load when designing or modifying schema (measurement/tag/field choices, cardinality planning)
     - `ingestion.md` - Data ingestion & writing: line protocol, batching, write endpoints
         - ALWAYS load when writing data or ingesting via line protocol
+    - `parameters.md` - InfluxDBv2 parameter reference
+        - SHOULD load when configuring or tuning instance parameters
     - `gotchas.md` - Common gotchas & pain points: cardinality, batching, limits
         - SHOULD load when ingesting at scale or diagnosing performance/limit issues
     - `onboarding.md` - Interactive get-started: provisioning through first write and query
