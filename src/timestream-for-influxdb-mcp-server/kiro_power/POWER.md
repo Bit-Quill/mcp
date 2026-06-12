@@ -48,10 +48,11 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
     - `query-guide.md` - Query examples (SQL, InfluxQL)
     - `troubleshooting.md` - Common errors in InfluxDB 3 and how to solve them
     - `migrations.md`
-        - ALWAYS load when migrating between InfluxDB versions or products (OSS/Core, Enterprise, or InfluxDB Cloud -> Timestream for InfluxDB 3)
-        - OSS (Core) -> Timestream for InfluxDB 3
-        - Core -> Enterprise
-        - InfluxDB Cloud -> Timestream for InfluxDB 3
+        - ALWAYS load when migrating TO Timestream for InfluxDB 3 from another source
+        - Timestream for LiveAnalytics -> Timestream for InfluxDB 3
+        - Timestream for InfluxDB (2) -> Timestream for InfluxDB 3
+        - InfluxDB v1 -> Timestream for InfluxDB 3
+        - InfluxDB OSS 2.x -> Timestream for InfluxDB 3
     - `dashboard-guide.md` - Generate grafana dashboards and visualizations
         - SHOULD load when building Grafana dashboards or visualizations
     - `schema-design.md` - Schema modeling: tables, tags vs. fields, cardinality
@@ -70,9 +71,10 @@ This Power enables you to deploy and operate Timestream for InfluxDB instances a
     - `query-guide.md` - Query examples (Flux, InfluxQL)
     - `troubleshooting.md` - Common errors in InfluxDB 2 and how to solve them
     - `migrations.md`
-        - ALWAYS load when migrating to or from Timestream for InfluxDB 2 (OSS -> v2, or v2 -> v3)
-        -  Timestream for InfluxDB (2) -> Timestream for InfluxDB 3
-        -  OSS -> Timestream for InfluxDB (2)
+        - ALWAYS load when migrating TO Timestream for InfluxDB 2 from another source
+        - InfluxDB OSS 2.x -> Timestream for InfluxDB (2)
+        - InfluxDB v1 -> Timestream for InfluxDB (2)
+        - Timestream for LiveAnalytics -> Timestream for InfluxDB (2)
     - `dashboard-guide.md` - Generate grafana dashboards and visualizations
         - SHOULD load when building Grafana dashboards or visualizations
     - `schema-design.md` - Schema modeling: buckets/measurements, tags vs. fields, cardinality

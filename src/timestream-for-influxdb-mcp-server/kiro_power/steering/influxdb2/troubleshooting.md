@@ -88,7 +88,7 @@ See [`gotchas.md`](./gotchas.md).
 
 ## Migrating to V3
 
-Planning a move off V2? See [migrations.md](./migrations.md) and
+Planning a move off V2 to V3? See [influxdb3/migrations.md](../influxdb3/migrations.md) and
 [influxdb-2-vs-3.md](../influxdb-2-vs-3.md) — note there is no turnkey data migration and
 Flux must be rewritten to SQL/InfluxQL.
 
