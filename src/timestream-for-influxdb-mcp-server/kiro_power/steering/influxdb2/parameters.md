@@ -4,6 +4,14 @@
 > you set exactly one top-level key, `InfluxDBv2`. You cannot mix it with `InfluxDBv3Core`
 > or `InfluxDBv3Enterprise` in the same parameter group. Keys are case-sensitive.
 
+> **Read replicas are not configured here.** Unlike v3 Enterprise — where cluster topology
+> (`ingestQueryInstances`, `queryOnlyInstances`, `dedicatedCompactor`) lives in the parameter
+> group — v2 read replicas are a **cluster-deployment** setting, not a parameter. Configure
+> them on `create-db-cluster` via `--deployment-type MULTI_NODE_READ_REPLICAS` and
+> `--failover-mode` (`AUTOMATIC` / `NO_FAILOVER`), and choose the node size with
+> `--db-instance-type`. The same `InfluxDBv2` parameter group applies uniformly to the primary
+> and all read replicas in the cluster. See `onboarding.md` for the full cluster setup workflow.
+
 ## Table of Contents
 - [InfluxDBv2 Parameters](#influxdbv2-parameters)
   - [Query and Logging](#query-and-logging)
