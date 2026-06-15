@@ -103,3 +103,15 @@ chasing auth or query issues:
 ```shell
 curl https://<endpoint>:8181/health
 ```
+
+## Core vs. Enterprise
+
+Timestream for InfluxDB Core has significant limitations compared to Enterprise. Specifically:
+
+| Core                                    | Enterprise                                                           |
+|----------------------------------------------------------------------------------------------------------------|
+| Single node                             | Up to 15 total nodes                                                 |
+| Default maximum query range of 72 hours | No limit on query range                                              |
+| Maximum of 5 databases                  | Maximum of 100 databases                                             |
+| Maximum of 2,000 total tables           | Maximum of 10,000 total tables                                       |
+| Does not have a processing engine       | Has a processing engine, allowing plugins to run within the database |
