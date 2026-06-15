@@ -17,7 +17,8 @@ Key differences:
 - V3 has **no organizations** — databases are the top-level container.
 - V3 measurements become **tables** automatically on first write. Tables have explicit column schemas.
 - V3 has **no practical cardinality limit** — the Parquet/S3 storage engine handles high-cardinality workloads that would degrade V2's TSM engine.
-- V3 (Enterprise/Core) limits tables to **10,000 across all databases** (default, set by the `--num-table-limit` server config — not a per-database limit) and **500 columns per table** (1 timestamp + up to 499 tag/field columns). These are server-level limits and are **not exposed in the Timestream parameter group**. See [Database, table, and column limits](https://docs.influxdata.com/influxdb3/enterprise/admin/databases/#database-table-and-column-limits).
+- V3 Enterprise limits the total number of tables to **10,000 across all databases**.
+- V3 Core limits the total number of tables to **2,000 across all databases**.
 
 ## Measurement Naming
 
@@ -34,7 +35,7 @@ When to use one measurement vs multiple:
 - Use **one measurement** when data shares the same tags and fields (e.g., all CPU metrics in `cpu` with fields `usage_idle`, `usage_system`, `usage_user`).
 - Use **separate measurements** when data has different tag/field schemas (e.g., `cpu` and `disk` have different fields and tags).
 - Do **not** create a measurement per entity (e.g., `cpu_server01`, `cpu_server02`) — use a `host` tag instead.
-- Be aware of the **10,000-table limit across all databases** (each unique measurement name creates a table).
+- Be aware of table limits (each unique measurement name creates a table).
 
 ## Tag vs Field Decision
 
@@ -119,7 +120,8 @@ A **series** is a unique combination of measurement name + tag set. Series cardi
 Example: `cpu,host=A,region=us` and `cpu,host=B,region=us` are 2 series.
 
 InfluxDB V3 Parquet/S3 storage engine has **virtually unlimited cardinality**. High-cardinality tags that would cripple V2 are handled efficiently. The main limits to watch are:
-- **10,000 tables across all databases** (default; server-level `--num-table-limit`, not tunable via the Timestream parameter group)
+- For Enterprise: 10,000 tables across all databases
+- For Core: 2,000 tables across all databases
 - **500 columns per table** (1 timestamp + up to 499 tag/field columns) — each tag key and field key is a column
 
 If a V2 user is hitting cardinality limits, migrating to V3 is the recommended long-term solution.
@@ -151,7 +153,7 @@ disk,host=web01,region=us-east-1,device=sda1 used_percent=45.0,free=107374182400
 - Separate measurements for `cpu`, `memory`, `disk` (different field schemas)
 - Tags: `host`, `region`, `device` (bounded)
 - Fields: numeric metrics
-- V3: creates 3 tables — count toward the 10,000-table limit (across all databases)
+- V3: creates 3 tables — count toward table limit (across all databases)
 
 ### Application metrics
 
