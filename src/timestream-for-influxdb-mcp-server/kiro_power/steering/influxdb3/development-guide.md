@@ -24,7 +24,7 @@ For schema operations, see [query-guide.md](./query-guide.md) and [schema-design
 
 ## Limitations
 
-Core has significant restrictions compared to Enterprise. See [influxdb3/troubleshooting.md](./troubleshooting.md) for more information.
+Core has significant restrictions compared to Enterprise. See [influxdb3/troubleshooting.md](./troubleshooting.md#core-vs-enterprise) for more information.
 
 ## Troubleshooting
 
