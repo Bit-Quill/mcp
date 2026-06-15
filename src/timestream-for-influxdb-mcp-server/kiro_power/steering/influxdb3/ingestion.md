@@ -182,11 +182,9 @@ Telegraf automatically batches writes — default `metric_batch_size = 1000`. In
 | 401 | Invalid or expired token | Verify token has write permission |
 | 404 | Database not found | Verify names or IDs |
 | 413 | Payload too large | Reduce batch size |
-| 422 | Field type conflict | Conflicting points are **dropped** (partial write); valid points in the batch succeed. Check field types haven't changed. |
+| 422 | Writing the line protocol points would exceed the maximum number of tables, databases, columns, tags, or fields | Check line protocol and existing data |
 | 429 | Too many requests | Back off and retry with exponential backoff |
 | 500 | Server error | Retry; check instance health via `/health` |
-
-On 400 (malformed line protocol), the entire batch is rejected. On 422 (type conflict), only the conflicting points are dropped — the rest of the batch succeeds.
 
 ## Tuning Write Performance
 

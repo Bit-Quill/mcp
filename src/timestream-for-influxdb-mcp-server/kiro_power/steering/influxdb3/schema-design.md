@@ -96,7 +96,7 @@ Field types are **locked on first write** per measurement per field key on both 
 | `count=10i` (integer) | `count=10.0` (float) | Error — `count` is locked as integer |
 | `status="ok"` (string) | `status=true` (boolean) | Error — `status` is locked as string |
 
-InfluxDB v3 returns **400** or **422** depending on `accept_partial` param. Same partial-write behavior.
+InfluxDB v3 returns **400** if points have been rejected. Depending of the value of the `accept_partial` query parameter, this may mean some points have been written. A **422** status code will be returned if writing the line protocol points would exceed the number of allowed databases, tables, columns, tags, or fields.
 
 Prevention:
 - Document your schema before writing. Agree on types per field across all writers.
