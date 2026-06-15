@@ -54,7 +54,7 @@ For example:
 ```shell
 curl --request POST \
   "http://localhost:8086/api/v2/query" \
-  --header "Authorization: Bearer INFLUX_TOKEN" \
+  --header "Authorization: Token INFLUX_TOKEN" \
   --header "Content-Type: application/json" \
   --data-raw '{
   "dialect": {},
