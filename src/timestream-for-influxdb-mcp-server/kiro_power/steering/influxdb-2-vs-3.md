@@ -71,6 +71,7 @@ There is **no automatic Flux-to-SQL conversion**. Migrating from V2 to V3 requir
 - **V2** organizes data as **Organization → Bucket**. Writes specify `org` and `bucket`; data-plane auth uses the `Token` prefix; default port **8086**.
 - **V3** organizes data as **Database → Table** (no organizations). Tables are created automatically on first write (a measurement becomes a table). Writes specify `db`; data-plane auth uses the `Bearer` prefix; default port **8181**.
 - **`422` HTTP status code meaning** - For v2, a status code of `422` means that some or all of the data was rejected. For v3, `422` means that writing the line protocol points would lead to the maximum number of databases, tables, columns, tags, or fields being exceeded.
+- **`400` HTTP status code meaning** - For v2, a status code of `400` means that the `org` or `orgID` parameter doesn't match an existing organization. For v3, a status code of `400` means that some or all of the data was rejected.
 **Backward compatibility:** V3 exposes v1- and v2-compatible write endpoints (including `/api/v2/write`), so existing line-protocol writers and Telegraf configs can keep writing without changes during a migration. Line protocol itself is unchanged across versions.
 
 ## Automation / Processing
