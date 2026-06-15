@@ -193,8 +193,8 @@ Telegraf automatically batches writes — default `metric_batch_size = 1000`. In
 | Parameter | Default | Recommendation |
 |-----------|---------|----------------|
 | `walMaxWriteBufferSize` | 100000 | Increase for bursty write workloads |
-| `ingestQueryInstances` | 2 | Increase for overall throughput |
-| `queryOnlyInstances` | 0 | Increase for higher query throughput |
+| `ingestQueryInstances` | 2 | Only for Enterprise. Increase for overall throughput |
+| `queryOnlyInstances` | 0 | Only for Enterprise. Increase for higher query throughput |
 
 ## Line Protocol
 
