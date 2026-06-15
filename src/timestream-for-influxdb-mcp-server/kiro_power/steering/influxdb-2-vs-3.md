@@ -38,7 +38,7 @@ To get more than one serving node, you must create a **read-replica cluster** (`
 ### V3 — cluster only
 Timestream for InfluxDB 3 is **always deployed as a cluster** (`create-db-cluster`). There is no single-instance API for V3. The cluster's topology is determined by the parameter group, not a `--deployment-type` flag (do **not** pass `--deployment-type` for V3):
 
-- **Core** — a **single-node** cluster. Ingestion, querying, compaction, and the processing engine all run on one node and share compute. Core has **no dedicated compactor**, so it is best for recent data (typically the last 3–5 days).
+- **Core** — a **single-node** cluster. Ingestion, querying, compaction, and the processing engine all run on one node and share compute. Core has **no dedicated compactor**, so it is best for recent data (typically the last 3–5 days). This can be adjusted by changing the `queryFileLimit` and `gen1Duration` configuration options in a cluster's parameter group. The default values of these options, `432` and 10 minutes, mean queries can access up to a maximum of 72 hours of data.
 - **Enterprise** — a **multi-node** cluster, up to 15 nodes: 1–4 writer (ingest) nodes, 0–13 read-only (query) nodes, and 1 compactor node. Nodes can be assigned distinct roles to isolate ingest/query/compaction/processing. All multi-node deployments are spread across multiple AZs for availability.
 
 **Summary:** V2 is single-node unless you build a read-replica cluster; V3 is only ever a cluster (single-node for Core, multi-node for Enterprise).
