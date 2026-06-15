@@ -109,7 +109,7 @@ curl https://<endpoint>:8181/health
 Timestream for InfluxDB Core has significant limitations compared to Enterprise. Specifically:
 
 | Core                                    | Enterprise                                                           |
-|----------------------------------------------------------------------------------------------------------------|
+|-----------------------------------------|----------------------------------------------------------------------|
 | Single node                             | Up to 15 total nodes                                                 |
 | Default maximum query range of 72 hours | No limit on query range                                              |
 | Maximum of 5 databases                  | Maximum of 100 databases                                             |
