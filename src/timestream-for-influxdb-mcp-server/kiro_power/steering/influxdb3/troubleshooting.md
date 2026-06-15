@@ -43,6 +43,7 @@ The native v3 write API (`/api/v3/write_lp`) returns these status codes (see the
 - **`401` Unauthorized** — missing/malformed `Authorization` header or a token without
   write permission.
 - **`404` Not found** — database not found; verify the `db` name.
+- **`422` Unprocessable entity** - Writing the line protocol points would lead to the maximum number of databases, tables, columns, tags, or fields being exceeded.
 - **`503` Service unavailable** — the server is temporarily rejecting writes; retry per
   the `Retry-After` header.
 - **Replica lag / slow writes** — caused by tiny writes from many concurrent
