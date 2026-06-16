@@ -13,11 +13,7 @@
 | Series cardinality | ~10M typical threshold (varies by instance) | Virtually unlimited |
 | Query language | Flux (primary), InfluxQL | SQL (primary), InfluxQL |
 
-Key differences:
-- V3 has **no organizations** — databases are the top-level container.
-- V3 measurements become **tables** automatically on first write. Tables have explicit column schemas.
-- V3 has **no practical cardinality limit** — the Parquet/S3 storage engine handles high-cardinality workloads that would degrade V2's TSM engine.
-- V3 (Enterprise/Core) limits tables to **10,000 across all databases** (default, set by the `--num-table-limit` server config — not a per-database limit) and **500 columns per table** (1 timestamp + up to 499 tag/field columns). These are server-level limits and are **not exposed in the Timestream parameter group**. See [Database, table, and column limits](https://docs.influxdata.com/influxdb3/enterprise/admin/databases/#database-table-and-column-limits).
+For key differences between InfluxDB v2 and v3, see [influxdb-2-vs-3.md](../influxdb-2-vs-3.md).
 
 ## Measurement Naming
 

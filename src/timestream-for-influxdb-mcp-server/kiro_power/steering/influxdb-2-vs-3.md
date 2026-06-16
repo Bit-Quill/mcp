@@ -19,9 +19,11 @@ Covers the differences between **Timestream for InfluxDB** (the InfluxDB 2.x eng
 | Cardinality | ~10M series practical limit | Virtually unlimited |
 | **Deployment topology** | **Single node** (optionally + standby); **read-replica cluster** for multiple nodes | **Cluster only** (Core = single-node, Enterprise = multi-node) |
 | Control-plane create op | `create-db-instance` or `create-db-cluster` | `create-db-cluster` only |
-| Max storage | Up to 16 TiB provisioned, **cannot grow after creation** | Elastic via S3 |
+| Max storage | Up to 16 TiB provisioned | Elastic via S3 |
 | Processing/automation | Tasks (Flux) | Processing engine (embedded Python VM) |
 | Extra licensing | Read replicas add a license fee | Enterprise adds a per-node Marketplace license; Core has none |
+| Table limit | No limit | For Core, 2,000 across all databases. For Enterprise, 10,000 across all databases |
+| Bucket/database limit | 20, recommended for performance, not a hard limit | For core, 5. For Enterprise, 100 |
 
 ## Deployment Topology
 
