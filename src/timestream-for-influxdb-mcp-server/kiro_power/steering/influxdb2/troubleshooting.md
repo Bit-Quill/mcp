@@ -77,9 +77,6 @@ See [`gotchas.md`](./gotchas.md).
   require a **reboot**. Create a new group and reassign with
   `update-db-cluster --db-parameter-group-identifier NEW_ID` (reboots automatically).
   There is no `UpdateDbParameterGroup` operation.
-- **Out of storage / cannot resize** — V2 storage **cannot be increased after creation**
-  (up to 16 TiB, planned upfront). Provision a new, larger instance and migrate data if
-  you outgrow it.
 
 ## Cost
 

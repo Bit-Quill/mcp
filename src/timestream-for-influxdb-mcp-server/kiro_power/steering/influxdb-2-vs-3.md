@@ -45,7 +45,7 @@ Timestream for InfluxDB 3 is **always deployed as a cluster** (`create-db-cluste
 
 ## Architecture & Storage
 
-**V2** uses the InfluxDB 2.x **TSM** storage engine with a **TSI** (time-series index). Tags are indexed, which is what makes high cardinality expensive — every unique tag-value combination becomes a series key, and large indexes drive memory pressure and slow writes/queries. Practical guidance caps a V2 instance at **~10M series**. Storage is local **Influx IOPS Included** block volumes (up to 16 TiB), and **storage cannot be increased after creation** — capacity must be planned upfront.
+**V2** uses the InfluxDB 2.x **TSM** storage engine with a **TSI** (time-series index). Tags are indexed, which is what makes high cardinality expensive — every unique tag-value combination becomes a series key, and large indexes drive memory pressure and slow writes/queries. Practical guidance caps a V2 instance at **~10M series**. Storage is local **Influx IOPS Included** block volumes (up to 16 TiB).
 
 **V3** is a ground-up redesign built on open formats:
 - **Rust** core for performance.

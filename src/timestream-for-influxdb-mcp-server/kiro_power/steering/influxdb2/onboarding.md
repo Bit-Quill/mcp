@@ -129,8 +129,6 @@ Use `--cidr <your-ip>/32` rather than `0.0.0.0/0` to avoid exposing the instance
 
 ## Step 1 — Provision the Instance
 
-**Storage sizing:** EBS storage cannot be increased after creation — plan capacity upfront. Minimum is 400GB; for production workloads estimate based on retention period × write rate × bytes per point.
-
 **Standalone (single node):**
 ```bash
 # 1. Create parameter group (name must be alphanumeric only — no hyphens)
