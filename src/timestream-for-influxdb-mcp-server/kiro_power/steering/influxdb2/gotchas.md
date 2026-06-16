@@ -22,10 +22,6 @@
 
 **No Direct Host Access**: Cannot SSH into instances. All management is via APIs, Console, or InfluxDB UI.
 
-## Operational — Will Cause Scaling Issues
-
-**No Storage Scaling for V2**: Cannot increase EBS storage after creation. Plan storage capacity upfront.
-
 ## Cost — Will Cause Bill Shock
 
 **Read Replica License**: V2 read replicas add 50% license fee on top of base instance cost.
