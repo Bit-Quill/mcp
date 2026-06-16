@@ -35,10 +35,7 @@ The native v3 write API (`/api/v3/write_lp`) returns these status codes (see the
   enabled (`accept_partial`, the default), valid points are still ingested and the
   response body lists the rejected lines (up to 100). **Field type conflicts** surface
   here: field types are inferred and **locked on first write**, so points whose field
-  types don't match existing data are rejected. Note: for v2, a status code of `422` means
-  that some or all of the data was rejected. For v3, `422` means that writing the line protocol
-  points would lead to the maximum number of databases, tables, columns, tags, or fields being exceeded.
-  malformed lines and type conflicts both return `400`. Validate syntax (see
+  types don't match existing data are rejected. Validate syntax (see
   [line-protocol.md](../line-protocol.md)).
 - **`401` Unauthorized** — missing/malformed `Authorization` header or a token without
   write permission.
