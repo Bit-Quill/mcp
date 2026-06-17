@@ -14,7 +14,6 @@ Covers the differences between **Timestream for InfluxDB** (the InfluxDB 2.x eng
 | Query language | Flux (primary), InfluxQL | SQL (primary), InfluxQL — **no Flux** |
 | Query/network protocol | HTTP | Apache Arrow Flight SQL (gRPC) + HTTP |
 | Default port | 8086 | 8181 |
-| Auth prefix | `Token` | `Bearer` |
 | Write namespacing | `org` + `bucket` | `db` (database) |
 | Cardinality | ~10M series practical limit | Virtually unlimited |
 | **Deployment topology** | **Single node** (optionally + standby); **read-replica cluster** for multiple nodes | **Cluster only** (Core = single-node, Enterprise = multi-node) |
@@ -70,7 +69,7 @@ There is **no automatic Flux-to-SQL conversion**. Migrating from V2 to V3 requir
 
 ## Data Model & API
 
-- **V2** organizes data as **Organization → Bucket**. Writes specify `org` and `bucket`; data-plane auth uses the `Token` prefix; default port **8086**.
+- **V2** organizes data as **Organization → Bucket**. Writes specify `org` and `bucket`; default port **8086**.
 - **V3** organizes data as **Database → Table** (no organizations). Tables are created automatically on first write (a measurement becomes a table). Writes specify `db`; data-plane auth uses the `Bearer` prefix; default port **8181**.
 - **`422` HTTP status code meaning** - For v2, a status code of `422` means that some or all of the data was rejected. For v3, `422` means that writing the line protocol points would lead to the maximum number of databases, tables, columns, tags, or fields being exceeded.
 - **`400` HTTP status code meaning** - For v2, a status code of `400` means that the `org` or `orgID` parameter doesn't match an existing organization. For v3, a status code of `400` means that some or all of the data was rejected.
@@ -92,7 +91,7 @@ There is **no automatic Flux-to-SQL conversion**. Migrating from V2 to V3 requir
 
 - **Choose V3** for high or unpredictable cardinality, SQL/BI integration, large historical retention (cheap S3), or when you need a multi-node solution for high ingest. V3 is also the forward path for workloads leaving Timestream for LiveAnalytics (in maintenance mode).
 - **Stay on / choose V2** when you depend on **Flux**, existing v2 tooling/dashboards, or org/bucket semantics, and your cardinality stays well under ~10M series.
-- **Migration checklist (V2 → V3):** rewrite Flux → SQL/InfluxQL; map orgs/buckets → databases/tables; switch auth `Token` → `Bearer` and port `8086` → `8181`; re-point writers (or use V3's v2-compatible write endpoint); re-provision as a cluster (Core or Enterprise).
+- **Migration checklist (V2 → V3):** rewrite Flux → SQL/InfluxQL; map orgs/buckets → databases/tables; switch port `8086` → `8181`; re-point writers (or use V3's v2-compatible write endpoint); re-provision as a cluster (Core or Enterprise).
 - **Data migration tooling:** the engines share no storage format, so there is no snapshot/restore between them. Use the [**Amazon Timestream for InfluxDB v2 to v3 Migration Script**](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/python/influxdb_v2_to_v3_migration), which automates `influx backup` → line-protocol translation (`influxd inspect export-lp`) → write to the V3 HTTP API (buckets → databases, measurements → tables). Full runbook: `influxdb3/migrations.md`.
 
 ## Retrieving tokens

@@ -15,7 +15,6 @@ name several concepts differently:
 | Bucket | Database (`db`) | Top-level write/query namespace |
 | Measurement | Table | A measurement becomes a table in V3 (auto-created on first write) |
 | Flux / InfluxQL | SQL / InfluxQL | V3 has no Flux; SQL is primary |
-| Token (`Token` prefix) | Token (`Bearer` prefix) | Data-plane auth header differs |
 | Tasks (Flux) | Processing engine (Python) | Scheduled automation |
 | TSM + TSI | Parquet on S3 + DataFusion | Storage + query engine |
 | Port 8086 | Port 8181 | Default endpoint port |
@@ -47,8 +46,8 @@ name several concepts differently:
   target (`bucket`).
 - **Database (db)** — V3 top-level namespace (replaces org/bucket).
 - **Retention period / policy** — how long data is kept before it expires.
-- **Token** — data-plane credential. V2 uses `Authorization: Token <token>`; V3 uses
-  `Authorization: Bearer <token>`. Operator/all-access tokens differ in scope.
+- **Token** — data-plane credential. V2 and V3 use `Authorization: Bearer <token>`.
+  Operator/all-access tokens differ in scope.
 - **Control plane vs data plane** — the control plane (create/manage instances and
   clusters) uses AWS SigV4/IAM; the data plane (read/write) is authorized only by the
   engine token (IAM does not gate it).

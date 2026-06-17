@@ -8,7 +8,7 @@ V2 supports two query languages:
 
 ```
 POST /api/v2/query?orgID=<org-id>
-Authorization: Token <token>
+Authorization: Bearer <token>
 Content-Type: application/vnd.flux
 Accept: application/csv
 ```
@@ -25,7 +25,7 @@ For example:
 curl \
   --request POST \
   http://localhost:8086/api/v2/query?orgID=ORG_ID \
-  --header 'Authorization: Token API_TOKEN' \
+  --header 'Authorization: Bearer API_TOKEN' \
   --header 'Accept: application/csv' \
   --header 'Content-Type: application/vnd.flux' \
   --data 'from(bucket:"BUCKET_NAME")
@@ -38,7 +38,7 @@ or
 
 ```
 POST /api/v2/query
-Authorization: Token <token>
+Authorization: Bearer <token>
 Content-Type: application/json
 Accept: application/csv
 ```
@@ -54,7 +54,7 @@ For example:
 ```shell
 curl --request POST \
   "http://localhost:8086/api/v2/query" \
-  --header "Authorization: Token INFLUX_TOKEN" \
+  --header "Authorization: Bearer INFLUX_TOKEN" \
   --header "Content-Type: application/json" \
   --data-raw '{
   "dialect": {},
@@ -197,13 +197,13 @@ from(bucket: "my-bucket")
 
 ```
 GET /query?db=<bucket-name>&q=<InfluxQL>&epoch=<s|ms|ns>
-Authorization: Token <token>
+Authorization: Bearer <token>
 ```
 
 Or via POST with form encoding:
 ```
 POST /query
-Authorization: Token <token>
+Authorization: Bearer <token>
 Content-Type: application/x-www-form-urlencoded
 
 db=<bucket-name>&q=<InfluxQL>
@@ -251,7 +251,7 @@ Tasks run Flux scripts on a schedule — used for downsampling, alerting, and da
 ```bash
 # Create a task
 curl -X POST "https://<endpoint>:8086/api/v2/tasks" \
-  -H "Authorization: Token <token>" \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "orgID": "<org-id>",
@@ -262,15 +262,15 @@ curl -X POST "https://<endpoint>:8086/api/v2/tasks" \
 
 # List tasks
 curl "https://<endpoint>:8086/api/v2/tasks?orgID=<org-id>" \
-  -H "Authorization: Token <token>"
+  -H "Authorization: Bearer <token>"
 
 # Manually trigger a task run
 curl -X POST "https://<endpoint>:8086/api/v2/tasks/<taskID>/runs" \
-  -H "Authorization: Token <token>"
+  -H "Authorization: Bearer <token>"
 
 # Check run history
 curl "https://<endpoint>:8086/api/v2/tasks/<taskID>/runs" \
-  -H "Authorization: Token <token>"
+  -H "Authorization: Bearer <token>"
 ```
 
 Task `status`: `active` (runs on schedule) | `inactive` (paused). Use `PATCH /api/v2/tasks/<taskID>` with `{"status": "inactive"}` to pause.

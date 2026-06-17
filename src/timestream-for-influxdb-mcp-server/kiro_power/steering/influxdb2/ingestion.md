@@ -4,7 +4,7 @@
 
 ```
 POST /api/v2/write?org=<org>&bucket=<bucket>&precision=<ns|us|ms|s>
-Authorization: Token <token>
+Authorization: Bearer <token>
 Content-Type: text/plain
 ```
 

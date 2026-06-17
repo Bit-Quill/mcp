@@ -24,7 +24,7 @@ from(bucket: "my-bucket")
 `v.timeRangeStart`/`v.timeRangeStop` bind the panel to Grafana's time picker; `v.windowPeriod` is the auto-interval for `aggregateWindow`.
 
 ### InfluxQL (alternative)
-Set **Query language: InfluxQL**. InfluxQL needs a **DBRP mapping** (database/retention-policy → bucket) on the instance; without it queries return no databases. Configure **Database**, and use **Token** auth (header `Authorization: Token <token>`). Use Flux instead, unless you need InfluxQL compatibility.
+Set **Query language: InfluxQL**. InfluxQL needs a **DBRP mapping** (database/retention-policy → bucket) on the instance; without it queries return no databases. Configure **Database**, and use **Bearer** auth (header `Authorization: Bearer <token>`). Use Flux instead, unless you need InfluxQL compatibility.
 
 Example panel query:
 ```sql
@@ -169,7 +169,7 @@ curl -X POST "https://<grafana-host>/api/datasources" \
     "access": "proxy",
     "url": "https://<instance-endpoint>:8086",
     "jsonData": { "dbName": "<bucket>", "httpHeaderName1": "Authorization" },
-    "secureJsonData": { "httpHeaderValue1": "Token <influxdb-token>" }
+    "secureJsonData": { "httpHeaderValue1": "Bearer <influxdb-token>" }
   }'
 ```
 

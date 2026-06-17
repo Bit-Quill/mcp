@@ -76,7 +76,7 @@ Guidance:
 
 ```bash
 curl -X POST "https://<endpoint>:8086/api/v2/buckets" \
-  -H "Authorization: Token $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "downsampled-90d",
@@ -112,7 +112,7 @@ Retention can be updated on an existing bucket via `PATCH /api/v2/buckets/{bucke
 
 ```bash
 curl -X PATCH "https://<endpoint>:8086/api/v2/buckets/<bucketID>" \
-  -H "Authorization: Token $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{ "retentionRules": [{ "type": "expire", "everySeconds": 604800 }] }'
 ```

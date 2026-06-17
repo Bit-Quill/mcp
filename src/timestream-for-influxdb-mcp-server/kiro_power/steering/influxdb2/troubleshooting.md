@@ -5,7 +5,7 @@ to resolve them. For cross-cutting connection/authorization problems (port, toke
 networking, namespace), start with the parent [troubleshooting.md](../troubleshooting.md).
 For terminology, see [glossary.md](../glossary.md).
 
-> V2 quick facts: default port **8086**, auth header `Authorization: Token <token>`,
+> V2 quick facts: default port **8086**, auth header `Authorization: Bearer <token>`,
 > write/query namespace is `org` + `bucket`, Flux is primary (InfluxQL also supported).
 > See [influxdb-2-vs-3.md](../influxdb-2-vs-3.md).
 
@@ -32,7 +32,7 @@ Status codes for the v2 write API (see the
 - **`400` Bad request** — malformed line protocol; **all request data is rejected** and
   the response body contains the first malformed line. Validate syntax (see
   [line-protocol.md](../line-protocol.md)).
-- **`401` Unauthorized** — missing/malformed `Authorization: Token` header or insufficient
+- **`401` Unauthorized** — missing/malformed `Authorization: Bearer` header or insufficient
   token permissions.
 - **`404` Not found** — a resource such as the `org` or `bucket` wasn't found.
 - **`413` Request entity too large** — reduce batch size.
