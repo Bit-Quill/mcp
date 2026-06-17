@@ -23,7 +23,7 @@ no Flux**. Consequences for every migration path:
 
 | Source | Tooling | Mechanism |
 |--------|---------|-----------|
-| **Timestream for LiveAnalytics** | [`tools/python/liveanalytics_migration_scripts`](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/python/liveanalytics_migration_scripts) (`influxdb_version: v3`) | Unload → transform to line protocol → ingest via V2-compatible API → validate |
+| **Timestream for LiveAnalytics** | [`tools/python/liveanalytics_influxdb3_migration_plugin`](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/python/liveanalytics_influxdb3_migration_plugin) (`influxdb_version: v3`) | Unload to S3 → ingest using processing engine → validate |
 | **Timestream for InfluxDB v2** | [`tools/python/influxdb_v2_to_v3_migration`](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/python/influxdb_v2_to_v3_migration) | `influx backup` → translate to line protocol → write to V3 HTTP API |
 | **InfluxDB v1** | No direct tool | Two-hop: `influxd upgrade` → `export-lp` → write line protocol to V3 |
 | **InfluxDB OSS 2.x** | Export line protocol | Write line protocol to V3's v2-compatible endpoint |
