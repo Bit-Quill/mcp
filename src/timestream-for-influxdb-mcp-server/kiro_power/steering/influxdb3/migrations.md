@@ -162,8 +162,8 @@ and processing-engine plugins on V3.
 ## Validate (any source)
 After loading, compare per-table row counts and cardinality between source and target, and
 spot-check a few time ranges (`SELECT count(*)`, min/max timestamps, sample rows) before
-decommissioning the source. The LiveAnalytics pipeline does this automatically in its
-validation stage.
+decommissioning the source. Note that `SELECT count(*)` is an expensive query and if the data range
+hasn't reached compaction then a timeout may occur.
 
 ## AWS migration tools and documentation
 - **Timestream for InfluxDB v2 → v3** — [Amazon Timestream for InfluxDB v2 to v3 Migration Script](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/python/influxdb_v2_to_v3_migration) (standalone or [automated EC2 deployment](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/python/influxdb_v2_to_v3_migration/automated_deployment)).
