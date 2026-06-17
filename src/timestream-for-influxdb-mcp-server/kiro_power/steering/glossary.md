@@ -77,7 +77,7 @@ name several concepts differently:
   compatibility endpoint).
 - **SQL** — V3's primary query language (DataFusion).
 - **Tasks** — V2 scheduled Flux scripts (downsampling, alerting).
-- **Processing engine** — V3's embedded Python VM that runs plugins on schedule or on
+- **Processing engine** — V3's embedded Python VM that runs plugins on schedule, HTTP invocation, or on
   WAL-flush events (replaces V2 Tasks).
 - **Telegraf** — InfluxData's plugin-based metrics collection agent; writes line
   protocol to either version.
